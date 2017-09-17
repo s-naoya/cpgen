@@ -29,7 +29,7 @@ class cpgen {
   void calcLandPos();
   void calcEndCP();
   void whichWalkOrStep();
-  bool isYSwingCorrect(double y);
+  bool isCollisionLegs(double y);
 
   CoMTrack comtrack;
   LegTrack legtrack;
