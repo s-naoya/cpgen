@@ -128,7 +128,7 @@ void cpgen::calcEndCP() {
 // neccesary call this if change "land_pos"
 void cpgen::calcLandPos() {
   whichWalkOrStep();
-  static Vector2 before_land_pos(land_pos.x(), land_pos.y());
+  static Vector3 before_land_pos(land_pos.x(), land_pos.y(), 0.0);
 
   // calc next step land position
   Vector2 next_land_distance(0.0, 0.0);
@@ -154,17 +154,25 @@ void cpgen::calcLandPos() {
     next_land_distance[0] = 0.0;
     next_land_distance[1] = 0.0;
   }
-  std::cout << wstate << ", " << swingleg << ": " << next_land_distance[0]
-            << ", " << next_land_distance[1] << std::endl;
 
   // calc next step land rotation
   Quaternion next_swing_q, next_sup_q;
-  if (swingleg == right) {
-    next_swing_q = rpy2q(0, 0, land_pos.z());
-    next_sup_q = rpy2q(0, 0, land_pos.z());
+  if (land_pos.z() > 0.0) {
+    if (swingleg == right) {
+      next_swing_q = rpy2q(0, 0, -land_pos.z()/2);
+      next_sup_q = rpy2q(0, 0, -land_pos.z()/2);
+    } else {
+      next_swing_q = rpy2q(0, 0, before_land_pos.z()/2);
+      next_sup_q = rpy2q(0, 0, before_land_pos.z()/2);
+    }
   } else {
-    next_swing_q = rpy2q(0, 0, -land_pos.z());
-    next_sup_q = rpy2q(0, 0, -land_pos.z());
+    if (swingleg == left) {
+      next_swing_q = rpy2q(0, 0, land_pos.z()/2);
+      next_sup_q = rpy2q(0, 0, land_pos.z()/2);
+    } else {
+      next_swing_q = rpy2q(0, 0, -before_land_pos.z()/2);
+      next_sup_q = rpy2q(0, 0, -before_land_pos.z()/2);
+    }
   }
 
   // set next landing position
@@ -183,8 +191,9 @@ void cpgen::calcLandPos() {
   land_pos_leg_w[swingleg].set(swing_p, swing_q);
   land_pos_leg_w[supleg].set(sup_p, sup_q);
 
-  before_land_pos[0] = land_pos.x();
-  before_land_pos[1] = land_pos.y();
+  before_land_pos.x() = land_pos.x();
+  before_land_pos.y() = land_pos.y();
+  before_land_pos.z() = land_pos.z();
 }
 
 void cpgen::whichWalkOrStep() {

@@ -37,34 +37,32 @@ void LegTrack::getLegTrack(const rl swingleg,
 
   // x, y
   lerp_pose(before_landpos[swingleg], before_landpos[swingleg],
-            double_sup_time * 0.5, &swing_leg_pos);
+            double_sup_time * 0.25, &swing_leg_pos);
   lerp_pose(before_landpos[swingleg], ref_landpos_leg_w[swingleg],
             single_sup_time, &swing_leg_pos);
   lerp_pose(ref_landpos_leg_w[swingleg], ref_landpos_leg_w[swingleg],
-            double_sup_time * 0.5, &swing_leg_pos);
+            double_sup_time * 0.25, &swing_leg_pos);
 
   // z
-  const double leg_grand = init_pose[0].p().z();
-  lerp_same(leg_grand, double_sup_time * 0.5, &leg_pos_z);
-  lerp_d(leg_grand, leg_grand + leg_h, single_sup_time * 0.5, &leg_pos_z);
-  lerp_d(leg_grand + leg_h, leg_grand, single_sup_time * 0.5, &leg_pos_z);
-  lerp_same(leg_grand, double_sup_time * 0.5, &leg_pos_z);
+  const double grand_h = init_pose[0].p().z();
+  lerp_same(grand_h, double_sup_time * 0.25, &leg_pos_z);
+  lerp_d(grand_h, grand_h + leg_h, single_sup_time * 0.5, &leg_pos_z);
+  lerp_d(grand_h + leg_h, grand_h, single_sup_time * 0.5, &leg_pos_z);
+  lerp_same(grand_h, double_sup_time * 0.25, &leg_pos_z);
 
   // yaw
   // swing leg
   Quaternion start_quat = before_landpos[swingleg].q();
   Quaternion finish_quat = ref_landpos_leg_w[swingleg].q();
-  lerp_same(start_quat, double_sup_time * 0.5, &leg_pos_quat);
+  lerp_same(start_quat, double_sup_time * 0.25, &leg_pos_quat);
   lerp_q(start_quat, finish_quat, single_sup_time, &leg_pos_quat);
-  lerp_same(finish_quat, double_sup_time * 0.5, &leg_pos_quat);
+  lerp_same(finish_quat, double_sup_time * 0.25, &leg_pos_quat);
   // support leg
   start_quat = before_landpos[supleg].q();
   finish_quat = ref_landpos_leg_w[supleg].q();
-  // lerp_same(start_quat, double_sup_time * 0.5, &sup_leg_quat);
-  // lerp_q(start_quat, finish_quat, single_sup_time, &sup_leg_quat);
-  // lerp_same(finish_quat, double_sup_time * 0.5, &sup_leg_quat);
-  lerp_q(start_quat, finish_quat, double_sup_time * 0.5, &sup_leg_quat);
-  lerp_same(finish_quat, single_sup_time + double_sup_time * 0.5, &sup_leg_quat);
+  lerp_same(start_quat, double_sup_time * 0.25, &sup_leg_quat);
+  lerp_q(start_quat, finish_quat, single_sup_time, &sup_leg_quat);
+  lerp_same(finish_quat, double_sup_time * 0.25, &sup_leg_quat);
 
   // union
   Pose sup_leg_pose;
