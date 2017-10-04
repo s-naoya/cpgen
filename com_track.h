@@ -1,5 +1,5 @@
-#ifndef ROBOTIS_OP_CPWALK_COM_TRACK_H_
-#define ROBOTIS_OP_CPWALK_COM_TRACK_H_
+#ifndef CPGEN_COM_TRACK_H_
+#define CPGEN_COM_TRACK_H_
 
 #include <iostream>
 #include <cmath>
@@ -46,4 +46,4 @@ class CoMTrack {
 };
 }  // namespace cp
 
-#endif  // ROBOTIS_OP_CPWALK_COM_TRACK_H_
+#endif  // CPGEN_COM_TRACK_H_

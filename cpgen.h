@@ -1,5 +1,5 @@
-#ifndef ROBOTIS_OP_CPWALK_CPGEN_H_
-#define ROBOTIS_OP_CPWALK_CPGEN_H_
+#ifndef CPGEN_CPGEN_H_
+#define CPGEN_CPGEN_H_
 
 #include "com_track.h"
 #include "leg_track.h"
@@ -50,7 +50,6 @@ class cpgen {
   Vector2 ref_zmp;
   double end_cp_offset[2];  // offset  x[m], y[m]
 
-  Vector3 designed_com_track;
   // world coodinate reference land position
   std::array<Pose, 2> land_pos_leg_w;
   // designed leg track [right, left] world
@@ -59,4 +58,4 @@ class cpgen {
 
 }  // namespace cp
 
-#endif  // ROBOTIS_OP_CPWALK_CPGEN_H_
+#endif  // CPGEN_CPGEN_H_

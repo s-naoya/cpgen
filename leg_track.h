@@ -1,6 +1,7 @@
-#ifndef ROBOTIS_OP_CPWALK_LEG_TRACK_H_
-#define ROBOTIS_OP_CPWALK_LEG_TRACK_H_
+#ifndef CPGEN_LEG_TRACK_H_
+#define CPGEN_LEG_TRACK_H_
 
+#include <iostream>
 #include <deque>
 
 #include "eigen_types.h"
@@ -51,4 +52,4 @@ class LegTrack {
 
 }  // namespace cp
 
-#endif  // ROBOTIS_OP_CPWALK_LEG_TRACK_H_
+#endif  // CPGEN_LEG_TRACK_H_
