@@ -8,6 +8,7 @@ void CoMTrack::init_setup(double t, double sst, double dst, double cogh,
                      const Vector3& com) {
   setup(t, sst, dst, cogh);
   now_cp << com[0], com[1];
+  ref_zmp << com[0], com[1];
   ref_com << com[0], com[1], cog_h;
 }
 
