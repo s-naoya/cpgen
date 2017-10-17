@@ -5,7 +5,7 @@ namespace cp {
 // setting initial value
 // necesarry call this before call getLegTrack
 void LegTrack::init_setup(double t, double sst, double dst, double legh,
-                     std::array<Pose, 2>& now_leg_pose) {
+                          Pose now_leg_pose[2]) {
   setup(t, sst, dst, legh);
   init_pose[0] = now_leg_pose[0];
   init_pose[1] = now_leg_pose[1];
@@ -25,9 +25,8 @@ void LegTrack::setup(double t, double sst, double dst, double legh) {
 // @param swingleg : swing leg flag
 // @param ref_landpos_leg_w[2] : Reference landing position. world coodinate.
 // @return return: r_leg_pos[2] : Designed both leg track. world coodinate.
-void LegTrack::getLegTrack(const rl swingleg,
-                           const std::array<Pose, 2>& ref_landpos_leg_w,
-                           std::array<std::deque<Pose>, 2>& r_leg_pos) {
+void LegTrack::getLegTrack(const rl swingleg, const Pose ref_landpos_leg_w[],
+                           std::deque<Pose> r_leg_pos[]) {
   std::deque<Pose> swing_leg_pos;
 
   std::deque<double> leg_pos_z;
@@ -68,8 +67,8 @@ void LegTrack::getLegTrack(const rl swingleg,
   Pose sup_leg_pose;
   for (int i = 0, n = swing_leg_pos.size(); i < n; ++i) {
     // swing leg
-    Vector3 tmp_p(swing_leg_pos[i].p().x(),
-                  swing_leg_pos[i].p().y(), leg_pos_z[i]);
+    Vector3 tmp_p(swing_leg_pos[i].p().x(), swing_leg_pos[i].p().y(),
+                  leg_pos_z[i]);
     swing_leg_pos[i].set(tmp_p, leg_pos_quat[i]);
     r_leg_pos[swingleg].push_back(swing_leg_pos[i]);
 

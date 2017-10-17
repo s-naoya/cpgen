@@ -1,8 +1,8 @@
 #ifndef CPGEN_LEG_TRACK_H_
 #define CPGEN_LEG_TRACK_H_
 
-#include <iostream>
 #include <deque>
+#include <iostream>
 
 #include "eigen_types.h"
 
@@ -16,12 +16,11 @@ class LegTrack {
   ~LegTrack() {}
 
   void init_setup(double t, double sst, double dst, double legh,
-             std::array<Pose, 2>& now_leg_pose);
+                  Pose now_leg_pose[]);
   void setup(double t, double sst, double dst, double legh);
 
-  void getLegTrack(const rl swingleg,
-                   const std::array<Pose, 2>& ref_landpos_leg_w,
-                   std::array<std::deque<Pose>, 2>& r_leg_pos);
+  void getLegTrack(const rl swingleg, const Pose ref_landpos_leg_w[],
+                   std::deque<Pose> r_leg_pos[]);
 
  private:
   void lerp_pose(const Pose start, const Pose finish, double tf,
@@ -46,8 +45,8 @@ class LegTrack {
   double double_sup_time;  // [s]
   double leg_h;            // height of up leg [m]
 
-  std::array<Pose, 2> init_pose;
-  std::array<Pose, 2> before_landpos;
+  Pose init_pose[2];
+  Pose before_landpos[2];
 };
 
 }  // namespace cp

@@ -3,15 +3,16 @@
 namespace cp {
 
 // init_leg_pos: 0: right, 1: left, world coodinate(leg end link)
-cpgen::cpgen(const Vector3& com, const std::array<Affine3d, 2>& init_leg_pos,
-             const std::array<cp::Quaternion, 2>& i_base2leg, double t,
-             double sst, double dst, double cogh, double legh) {
+cpgen::cpgen(const Vector3& com, const Affine3d init_leg_pos[],
+             const Quaternion i_base2leg[], double t, double sst, double dst,
+             double cogh, double legh) {
   // init variable setup
   swingleg = left;
   end_cp_offset[0] = 0.001;
   end_cp_offset[1] = 0.02;
   setInitLandPos(init_leg_pos);
-  base2leg = i_base2leg;
+  base2leg[0] = i_base2leg[0];
+  base2leg[1] = i_base2leg[1];
 
   setup(t, sst, dst, cogh, legh);
   comtrack.init_setup(dt, single_sup_time, double_sup_time, cog_h, com);
@@ -149,6 +150,8 @@ void cpgen::calcLandPos() {
     next_land_distance[0] =
         before_land_pos.x() * 2 + (land_pos.x() - before_land_pos.x());
     next_land_distance[1] =
+        // isCollisionLegs(land_pos.y(), before_land_pos.y()) ?
+        // before_land_pos.y() : land_pos.y();
         isCollisionLegs(land_pos.y()) ? before_land_pos.y() : land_pos.y();
   } else {
     next_land_distance[0] = 0.0;
@@ -159,19 +162,19 @@ void cpgen::calcLandPos() {
   Quaternion next_swing_q, next_sup_q;
   if (land_pos.z() > 0.0) {
     if (swingleg == right) {
-      next_swing_q = rpy2q(0, 0, -land_pos.z()/2);
-      next_sup_q = rpy2q(0, 0, -land_pos.z()/2);
+      next_swing_q = rpy2q(0, 0, -land_pos.z() / 2);
+      next_sup_q = rpy2q(0, 0, -land_pos.z() / 2);
     } else {
-      next_swing_q = rpy2q(0, 0, before_land_pos.z()/2);
-      next_sup_q = rpy2q(0, 0, before_land_pos.z()/2);
+      next_swing_q = rpy2q(0, 0, before_land_pos.z() / 2);
+      next_sup_q = rpy2q(0, 0, before_land_pos.z() / 2);
     }
   } else {
     if (swingleg == left) {
-      next_swing_q = rpy2q(0, 0, land_pos.z()/2);
-      next_sup_q = rpy2q(0, 0, land_pos.z()/2);
+      next_swing_q = rpy2q(0, 0, land_pos.z() / 2);
+      next_sup_q = rpy2q(0, 0, land_pos.z() / 2);
     } else {
-      next_swing_q = rpy2q(0, 0, -before_land_pos.z()/2);
-      next_sup_q = rpy2q(0, 0, -before_land_pos.z()/2);
+      next_swing_q = rpy2q(0, 0, -before_land_pos.z() / 2);
+      next_sup_q = rpy2q(0, 0, -before_land_pos.z() / 2);
     }
   }
 
@@ -218,8 +221,17 @@ bool cpgen::isCollisionLegs(double y) {
   }
 }
 
+bool cpgen::isCollisionLegs(double yn, double yb) {
+  if ((swingleg == right && yn > 0 && yn >= yb) ||
+      (swingleg == left && yn <= 0 && yn <= yb)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 // initialze "land_pos_leg_w"
-void cpgen::setInitLandPos(const std::array<Affine3d, 2>& init_leg_pos) {
+void cpgen::setInitLandPos(const Affine3d init_leg_pos[]) {
   for (int i = 0; i < 2; ++i) {
     Vector3 trans = init_leg_pos[i].translation();
     Quaternion q = Quaternion(init_leg_pos[i].rotation());

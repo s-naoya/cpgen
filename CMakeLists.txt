@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(cpgen)
-add_definitions(-std=c++11)
+# add_definitions(-std=c++11)
 
 set(CMAKE_CXX_FLAGS_RELEASE "-Wall -O2")
 

@@ -77,11 +77,15 @@ using Eigen::Isometry3f;
 using Eigen::Isometry3d;
 typedef Eigen::Isometry3d EIsometry3;
 
-constexpr double PI = 3.14159265358979323846;
-constexpr double PI_2 = 1.57079632679489661923;
+// constexpr double PI = 3.14159265358979323846;
+// constexpr double PI_2 = 1.57079632679489661923;
+const double PI = 3.14159265358979323846;
+const double PI_2 = 1.57079632679489661923;
 
-constexpr double TO_DEGREE = 180.0 / PI;
-constexpr double TO_RADIAN = PI / 180.0;
+// constexpr double TO_DEGREE = 180.0 / PI;
+// constexpr double TO_RADIAN = PI / 180.0;
+const double TO_DEGREE = 180.0 / PI;
+const double TO_RADIAN = PI / 180.0;
 
 inline double rad2deg(double rad) { return TO_DEGREE * rad; }
 inline double deg2rad(double deg) { return TO_RADIAN * deg; }
@@ -126,8 +130,8 @@ enum walking_state {
 
   starting = 5,  // stop -> (walk or step)
 
-  walk2step = 6, // walk -> step
-  step2walk = 7  // step -> walk
+  walk2step = 6,  // walk -> step
+  step2walk = 7   // step -> walk
 };
 
 class Pose {
