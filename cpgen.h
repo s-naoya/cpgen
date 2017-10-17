@@ -1,6 +1,8 @@
 #ifndef CPGEN_CPGEN_H_
 #define CPGEN_CPGEN_H_
 
+#include <cmath>
+
 #include "com_track.h"
 #include "leg_track.h"
 
@@ -23,6 +25,7 @@ class cpgen {
 
   Pose setInitLandPos(const Affine3d& init_leg_pos);
   void setLandPos(const Vector3& pose);
+  int getSwingleg() {return swingleg;}
 
  private:
   void setInitLandPos(const Affine3d init_leg_pos[]);

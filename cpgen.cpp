@@ -8,7 +8,7 @@ cpgen::cpgen(const Vector3& com, const Affine3d init_leg_pos[],
              double cogh, double legh) {
   // init variable setup
   swingleg = left;
-  end_cp_offset[0] = 0.001;
+  end_cp_offset[0] = 0.01;  // 0.001
   end_cp_offset[1] = 0.02;
   setInitLandPos(init_leg_pos);
   base2leg[0] = i_base2leg[0];
@@ -86,7 +86,8 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Pose* right_leg_pos,
   }
 
   // push walking pattern
-  *com_pos = comtrack.getCoMTrack(end_cp, step_delta_time);
+  Vector3 com_pos_tmp = comtrack.getCoMTrack(end_cp, step_delta_time);
+  *com_pos = com_pos_tmp;
   *right_leg_pos = designed_leg_track[right].front();
   *left_leg_pos = designed_leg_track[left].front();
   designed_leg_track[right].pop_front();
@@ -101,7 +102,9 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Pose* right_leg_pos,
         wstate = walk;
       }
     } else if (wstate == stopping) {
-      wstate = stopped;
+      if (fabs(com_pos_tmp[1]) < 0.001) {
+        wstate = stopped;
+      }
     } else if (wstate == walk2step) {
       wstate = step;
     } else if (wstate == step2walk) {
@@ -146,13 +149,12 @@ void cpgen::calcLandPos() {
     next_land_distance[1] =
         isCollisionLegs(before_land_pos.y()) ? before_land_pos.y() : 0.0;
   } else if (wstate == walk) {
-    // correspond accelate
     next_land_distance[0] =
         before_land_pos.x() * 2 + (land_pos.x() - before_land_pos.x());
-    next_land_distance[1] =
-        // isCollisionLegs(land_pos.y(), before_land_pos.y()) ?
-        // before_land_pos.y() : land_pos.y();
-        isCollisionLegs(land_pos.y()) ? before_land_pos.y() : land_pos.y();
+    next_land_distance[1] = isCollisionLegs(land_pos.y(), before_land_pos.y())
+                                ? before_land_pos.y()
+                                : land_pos.y();
+    // isCollisionLegs(land_pos.y()) ? before_land_pos.y() : land_pos.y();
   } else {
     next_land_distance[0] = 0.0;
     next_land_distance[1] = 0.0;
