@@ -65,7 +65,11 @@ void cpgen::restart() {
   std::cout << "[cpgen] Restart Walking" << std::endl;
 }
 
-void cpgen::setLandPos(const Vector3& pose) { land_pos = pose; }
+void cpgen::setLandPos(const Vector3& pose) {
+  land_pos = pose;
+  land_pos[0] = floor(land_pos[0]*1e2)*1e-2;
+  land_pos[1] = floor(land_pos[1]*1e2)*1e-2;
+}
 
 void cpgen::getWalkingPattern(Vector3* com_pos, Pose* right_leg_pos,
                               Pose* left_leg_pos) {
@@ -101,10 +105,10 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Pose* right_leg_pos,
       } else {
         wstate = walk;
       }
+    } else if (wstate == stop_next) {
+      wstate = stopping;
     } else if (wstate == stopping) {
-      if (fabs(com_pos_tmp[1]) < 0.001) {
-        wstate = stopped;
-      }
+      wstate = stopped;
     } else if (wstate == walk2step) {
       wstate = step;
     } else if (wstate == step2walk) {
@@ -116,8 +120,8 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Pose* right_leg_pos,
 
 void cpgen::calcEndCP() {
   calcLandPos();
-  if (wstate == stopping) {
-    end_cp[0] = land_pos_leg_w[swingleg].p().x();
+  if (wstate == stopping || wstate == stop_next) {
+    end_cp[0] = land_pos_leg_w[swingleg].p().x() + end_cp_offset[0];
     end_cp[1] = (land_pos_leg_w[0].p().y() + land_pos_leg_w[1].p().y()) / 2;
   } else {
     end_cp[0] = land_pos_leg_w[swingleg].p().x() + end_cp_offset[0];
@@ -133,28 +137,25 @@ void cpgen::calcEndCP() {
 void cpgen::calcLandPos() {
   whichWalkOrStep();
   static Vector3 before_land_pos(land_pos.x(), land_pos.y(), 0.0);
+  static Vector2 before_land_dis(land_pos.x(), land_pos.y());
 
   // calc next step land position
   Vector2 next_land_distance(0.0, 0.0);
   if (wstate == starting || wstate == step2walk) {  // walking start
     next_land_distance[0] = land_pos.x();
-    next_land_distance[1] = isCollisionLegs(land_pos.y()) ? 0.0 : land_pos.y();
-  } else if (wstate == stop_next) {  // walking stop
+    next_land_distance[1] = isCollisionLegs(land_pos.y()) ? land_pos.y() : 0.0;
+  } else if (wstate == stop_next || wstate == stopping) {  // walking stop
     next_land_distance[0] = land_pos.x();
     next_land_distance[1] =
         isCollisionLegs(before_land_pos.y()) ? before_land_pos.y() : 0.0;
-    wstate = stopping;
   } else if (wstate == walk2step) {  // walk -> step
     next_land_distance[0] = before_land_pos.x();
     next_land_distance[1] =
-        isCollisionLegs(before_land_pos.y()) ? before_land_pos.y() : 0.0;
+        isCollisionLegs(before_land_pos.y()) ? 0.0 : before_land_pos.y();
   } else if (wstate == walk) {
     next_land_distance[0] =
         before_land_pos.x() * 2 + (land_pos.x() - before_land_pos.x());
-    next_land_distance[1] = isCollisionLegs(land_pos.y(), before_land_pos.y())
-                                ? before_land_pos.y()
-                                : land_pos.y();
-    // isCollisionLegs(land_pos.y()) ? before_land_pos.y() : land_pos.y();
+    next_land_distance[1] = isCollisionLegs(land_pos.y(), before_land_dis.y());
   } else {
     next_land_distance[0] = 0.0;
     next_land_distance[1] = 0.0;
@@ -196,13 +197,12 @@ void cpgen::calcLandPos() {
   land_pos_leg_w[swingleg].set(swing_p, swing_q);
   land_pos_leg_w[supleg].set(sup_p, sup_q);
 
-  before_land_pos.x() = land_pos.x();
-  before_land_pos.y() = land_pos.y();
-  before_land_pos.z() = land_pos.z();
+  before_land_pos = land_pos;
+  before_land_dis = next_land_distance;
 }
 
 void cpgen::whichWalkOrStep() {
-  if (land_pos.x() != 0.0 || land_pos.y() != 0.0 || land_pos.z() != 0.0) {
+  if (land_pos.x() != 0.0 || land_pos.y() != 0.0) {
     if (whichwalk == step) {
       wstate = step2walk;
     }
@@ -216,19 +216,25 @@ void cpgen::whichWalkOrStep() {
 }
 
 bool cpgen::isCollisionLegs(double y) {
-  if ((swingleg == right && y > 0) || (swingleg == left && y < 0)) {
+  if ((swingleg == right && y < 0) || (swingleg == left && y >= 0)) {
+    std::cout << swingleg << ", " << y << ", true" << std::endl;
     return true;
   } else {
+    std::cout << swingleg << ", " << y << ", false" << std::endl;
     return false;
   }
 }
 
-bool cpgen::isCollisionLegs(double yn, double yb) {
-  if ((swingleg == right && yn > 0 && yn >= yb) ||
-      (swingleg == left && yn <= 0 && yn <= yb)) {
-    return true;
+double cpgen::isCollisionLegs(double yn, double yb) {
+  std::cout << swingleg << ", " << yn << ", " << yb << std::endl;
+  if (swingleg == right && yn < 0) {
+    if (yb > 0) return 0.0;
+    else return yn;
+  } else if (swingleg == left && yn >= 0) {
+    if (yb < 0) return 0.0;
+    else return yn;
   } else {
-    return false;
+    return yb;
   }
 }
 
@@ -245,8 +251,7 @@ void cpgen::setInitLandPos(const Affine3d init_leg_pos[]) {
 Pose cpgen::setInitLandPos(const Affine3d& init_leg_pos) {
   Vector3 trans = init_leg_pos.translation();
   Quaternion q = Quaternion(init_leg_pos.rotation());
-  cp::Pose pose;
-  pose.set(trans, q);
+  cp::Pose pose(trans, q);
   return pose;
 }
 

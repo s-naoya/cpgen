@@ -4,4 +4,4 @@ CMakeCache.txt
 install_manifest.txt
 *.so
 Makefile
-.vscode
+.vscode/

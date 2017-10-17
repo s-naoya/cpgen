@@ -33,7 +33,7 @@ class cpgen {
   void calcEndCP();
   void whichWalkOrStep();
   bool isCollisionLegs(double y);
-  bool isCollisionLegs(double yn, double yb);
+  double isCollisionLegs(double yn, double yb);
 
   CoMTrack comtrack;
   LegTrack legtrack;
