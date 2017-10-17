@@ -9,8 +9,8 @@ namespace cp {
 class cpgen {
  public:
   cpgen(const Vector3& com, const Affine3d init_leg_pos[],
-        const Quaternion i_base2leg[],
-        double t, double sst, double dst, double cogh, double legh);
+        const Quaternion i_base2leg[], double t, double sst, double dst,
+        double cogh, double legh);
   ~cpgen() {}
 
   void setup(double t, double sst, double dst, double cogh, double legh);
@@ -18,8 +18,8 @@ class cpgen {
   void start();
   void stop();
   void restart();
-  void getWalkingPattern(const Vector3& com, Vector3* com_pos,
-                         Pose* right_leg_pos, Pose* left_leg_pos);
+  void getWalkingPattern(Vector3* com_pos, Pose* right_leg_pos,
+                         Pose* left_leg_pos);
 
   Pose setInitLandPos(const Affine3d& init_leg_pos);
   void setLandPos(const Vector3& pose);

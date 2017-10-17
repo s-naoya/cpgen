@@ -5,7 +5,7 @@ namespace cp {
 // setting initial value
 // necesarry call this before call getCoMTrack
 void CoMTrack::init_setup(double t, double sst, double dst, double cogh,
-                     const Vector3& com) {
+                          const Vector3& com) {
   setup(t, sst, dst, cogh);
   now_cp << com[0], com[1];
   ref_zmp << com[0], com[1];
@@ -24,14 +24,12 @@ void CoMTrack::setup(double t, double sst, double dst, double cogh) {
 }
 
 // calc CoM track of walking pattern every cycle
-// @param com : now CoM  --- now no use ---
 // @param end_cp : end CP of this step
 // @param step_delta_time : dT of this step
 // @return : CoM track
-Vector3 CoMTrack::getCoMTrack(const Vector3& com, const Vector2& end_cp,
-                              double step_delta_time) {
+Vector3 CoMTrack::getCoMTrack(const Vector2& end_cp, double step_delta_time) {
   Vector2 ref_cp = calcCPTrack(step_delta_time);
-  calcCoMTrack(ref_cp, com);
+  calcCoMTrack(ref_cp);
   return ref_com;
 }
 
@@ -58,10 +56,9 @@ Vector2 CoMTrack::calcCPTrack(double step_delta_time) {
   return ref_cp;
 }
 
-void CoMTrack::calcCoMTrack(const Vector2& ref_cp, const Vector3& com) {
+void CoMTrack::calcCoMTrack(const Vector2& ref_cp) {
   Vector2 now_com_pos, com_vel, com_pos;
   now_com_pos << ref_com[0], ref_com[1];
-  // now_com_pos << com[0], com[1]; // TODO! local CoM to World coodinate
   com_vel = w_s * (ref_cp - now_com_pos);
   com_pos = now_com_pos + com_vel * dt_s;
   ref_com[0] = com_pos[0];

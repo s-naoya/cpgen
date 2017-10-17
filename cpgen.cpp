@@ -67,8 +67,8 @@ void cpgen::restart() {
 
 void cpgen::setLandPos(const Vector3& pose) { land_pos = pose; }
 
-void cpgen::getWalkingPattern(const Vector3& com, Vector3* com_pos,
-                              Pose* right_leg_pos, Pose* left_leg_pos) {
+void cpgen::getWalkingPattern(Vector3* com_pos, Pose* right_leg_pos,
+                              Pose* left_leg_pos) {
   static double step_delta_time = 0.0;
 
   if (wstate == stopped) {
@@ -86,7 +86,7 @@ void cpgen::getWalkingPattern(const Vector3& com, Vector3* com_pos,
   }
 
   // push walking pattern
-  *com_pos = comtrack.getCoMTrack(com, end_cp, step_delta_time);
+  *com_pos = comtrack.getCoMTrack(end_cp, step_delta_time);
   *right_leg_pos = designed_leg_track[right].front();
   *left_leg_pos = designed_leg_track[left].front();
   designed_leg_track[right].pop_front();
