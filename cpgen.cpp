@@ -126,9 +126,9 @@ void cpgen::calcEndCP() {
   } else {
     end_cp[0] = land_pos_leg_w[swingleg].p().x() + end_cp_offset[0];
     if (swingleg == right) {
-      end_cp[1] = land_pos_leg_w[swingleg].p().y() + end_cp_offset[1];
-    } else {
       end_cp[1] = land_pos_leg_w[swingleg].p().y() - end_cp_offset[1];
+    } else {
+      end_cp[1] = land_pos_leg_w[swingleg].p().y() + end_cp_offset[1];
     }
   }
 }
