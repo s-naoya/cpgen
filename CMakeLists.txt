@@ -10,11 +10,12 @@ com_track.cpp
 leg_track.cpp
 )
 
-find_package(Eigen3 REQUIRED)
+# find_package(Eigen3 REQUIRED)
 
 include_directories(${PROJECT_SOURCE_DIR})
-include_directories(${EIGEN3_INCLUDE_DIR})
+# include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories(/usr/include/eigen3)
 add_library(cpgen SHARED ${SOURCES})
 
-install(TARGETS cpgen LIBRARY DESTINATION lib/cpgen)
-install(FILES cpgen.h com_track.h leg_track.h eigen_types.h DESTINATION include/cpgen)
+install(TARGETS cpgen LIBRARY DESTINATION lib)
+install(FILES cpgen.h com_track.h leg_track.h eigen_types.h DESTINATION include)
