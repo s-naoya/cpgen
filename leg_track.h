@@ -20,25 +20,19 @@ class LegTrack {
   void setup(double t, double sst, double dst, double legh);
 
   void getLegTrack(const rl swingleg, const Pose ref_landpos_leg_w[],
-                   std::deque<Pose> r_leg_pos[]);
+                   std::deque<Pose, Eigen::aligned_allocator<Pose> > r_leg_pos[]);
 
  private:
   void lerp_pose(const Pose start, const Pose finish, double tf,
-                 std::deque<Pose>* input);
+                 std::deque<Pose, Eigen::aligned_allocator<Pose> >* input);
 
   void lerp_d(const double start, const double finish, double tf,
               std::deque<double>* input);
 
   void lerp_q(const Quaternion start, const Quaternion finish, double tf,
-              std::deque<Quaternion>* input);
-
-  template <class T>
-  void lerp_same(T x, double tf, std::deque<T>* input) {
-    int num = (int)(tf / dt + 1e-8);
-    for (int i = 1; i < num + 1; i++) {
-      input->push_back(x);
-    }
-  }
+              std::deque<Quaternion, Eigen::aligned_allocator<Quaternion> >* input);
+  void lerp_same(double x, double tf, std::deque<double>* input);
+  void lerp_same(Quaternion x, double tf, std::deque<Quaternion,Eigen::aligned_allocator<Quaternion> >* input);
 
   double dt;               // sampling time [s]
   double single_sup_time;  // [s]

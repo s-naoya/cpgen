@@ -61,7 +61,7 @@ class cpgen {
   // world coodinate reference land position
   Pose land_pos_leg_w[2];
   // designed leg track [right, left] world
-  std::deque<Pose> designed_leg_track[2];
+  std::deque<Pose, Eigen::aligned_allocator<Pose> > designed_leg_track[2];
 };
 
 }  // namespace cp

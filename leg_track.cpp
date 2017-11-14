@@ -26,12 +26,12 @@ void LegTrack::setup(double t, double sst, double dst, double legh) {
 // @param ref_landpos_leg_w[2] : Reference landing position. world coodinate.
 // @return return: r_leg_pos[2] : Designed both leg track. world coodinate.
 void LegTrack::getLegTrack(const rl swingleg, const Pose ref_landpos_leg_w[],
-                           std::deque<Pose> r_leg_pos[]) {
-  std::deque<Pose> swing_leg_pos;
+                           std::deque<Pose, Eigen::aligned_allocator<Pose> > r_leg_pos[]) {
+  std::deque<Pose, Eigen::aligned_allocator<Pose> > swing_leg_pos;
 
   std::deque<double> leg_pos_z;
-  std::deque<Quaternion> leg_pos_quat;
-  std::deque<Quaternion> sup_leg_quat;
+  std::deque<Quaternion, Eigen::aligned_allocator<Quaternion> > leg_pos_quat;
+  std::deque<Quaternion, Eigen::aligned_allocator<Quaternion> > sup_leg_quat;
   rl supleg = swingleg == right ? left : right;
 
   // x, y
@@ -82,7 +82,7 @@ void LegTrack::getLegTrack(const rl swingleg, const Pose ref_landpos_leg_w[],
 }
 
 void LegTrack::lerp_pose(const Pose start, const Pose finish, double tf,
-                         std::deque<Pose>* input) {
+                         std::deque<Pose, Eigen::aligned_allocator<Pose> >* input) {
   const int num = (int)(tf / dt + 1e-8);
   Pose tmp;
   for (int i = 1; i < num + 1; ++i) {
@@ -103,7 +103,7 @@ void LegTrack::lerp_d(const double start, const double finish, double tf,
 }
 
 void LegTrack::lerp_q(const Quaternion start, const Quaternion finish,
-                      double tf, std::deque<Quaternion>* input) {
+                      double tf, std::deque<Quaternion,Eigen::aligned_allocator<Quaternion> >* input) {
   const int num = (int)(tf / dt + 1e-8) + 1;
   Quaternion tmp;
   for (int i = 1; i < num + 1; i++) {
@@ -111,5 +111,20 @@ void LegTrack::lerp_q(const Quaternion start, const Quaternion finish,
     input->push_back(start.slerp(t, finish));
   }
 }
+
+void LegTrack::lerp_same(double x, double tf, std::deque<double>* input) {
+  int num = (int)(tf / dt + 1e-8);
+  for (int i = 1; i < num + 1; i++) {
+    input->push_back(x);
+  }
+}
+
+void LegTrack::lerp_same(Quaternion x, double tf, std::deque<Quaternion,Eigen::aligned_allocator<Quaternion> >* input) {
+  int num = (int)(tf / dt + 1e-8);
+  for (int i = 1; i < num + 1; i++) {
+    input->push_back(x);
+  }
+}
+
 
 }  // namespace cp
