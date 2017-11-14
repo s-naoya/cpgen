@@ -110,9 +110,12 @@ inline Matrix3 rpy2mat(double roll, double pitch, double yaw) {
   return rotationMatrix;
 }
 
-inline Vector3 rot2rqy(Matrix3 mat) { return mat.eulerAngles(0, 1, 2); }
+inline Vector3 mat2rqy(Matrix3 mat) { return mat.eulerAngles(0, 1, 2); }
 inline Vector3 q2rpy(Quaternion q) {
   return q.toRotationMatrix().eulerAngles(0, 1, 2);
+}
+inline Quat mat2q(Matrix3 mat) {
+  Quat q(mat); return q;
 }
 
 enum rl { right, left, both };
