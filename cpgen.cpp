@@ -3,7 +3,7 @@
 namespace cp {
 
 // init_leg_pos: 0: right, 1: left, world coodinate(leg end link)
-cpgen::cpgen(const Vector3& com, const Affine3d init_leg_pos[],
+void cpgen::initialize(const Vector3& com, const Affine3d init_leg_pos[],
              const Quaternion i_base2leg[], double t, double sst, double dst,
              double cogh, double legh) {
   // init variable setup
@@ -67,8 +67,6 @@ void cpgen::restart() {
 
 void cpgen::setLandPos(const Vector3& pose) {
   land_pos = pose;
-  land_pos[0] = floor(land_pos[0]*1e2)*1e-2;
-  land_pos[1] = floor(land_pos[1]*1e2)*1e-2;
 }
 
 void cpgen::getWalkingPattern(Vector3* com_pos, Pose* right_leg_pos,

@@ -10,11 +10,12 @@ namespace cp {
 
 class cpgen {
  public:
-  cpgen(const Vector3& com, const Affine3d init_leg_pos[],
-        const Quaternion i_base2leg[], double t, double sst, double dst,
-        double cogh, double legh);
+  cpgen() {}
   ~cpgen() {}
 
+  void initialize(const Vector3& com, const Affine3d init_leg_pos[],
+        const Quaternion i_base2leg[], double t, double sst, double dst,
+        double cogh, double legh);
   void setup(double t, double sst, double dst, double cogh, double legh);
 
   void start();
