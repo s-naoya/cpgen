@@ -4,15 +4,13 @@ namespace cp {
 
 // init_leg_pos: 0: right, 1: left, world coodinate(leg end link)
 void cpgen::initialize(const Vector3& com, const Affine3d init_leg_pos[],
-             const Quaternion i_base2leg[], double t, double sst, double dst,
-             double cogh, double legh) {
+             const Quaternion i_base2leg[], const double endcpoff[],
+             double t, double sst, double dst, double cogh, double legh) {
   // init variable setup
   swingleg = left;
-  end_cp_offset[0] = 0.01;  // 0.001
-  end_cp_offset[1] = 0.02;
+  end_cp_offset[0] = endcpoff[0];  end_cp_offset[1] = endcpoff[1];
   setInitLandPos(init_leg_pos);
-  base2leg[0] = i_base2leg[0];
-  base2leg[1] = i_base2leg[1];
+  base2leg[0] = i_base2leg[0];  base2leg[1] = i_base2leg[1];
 
   setup(t, sst, dst, cogh, legh);
   comtrack.init_setup(dt, single_sup_time, double_sup_time, cog_h, com);
@@ -48,7 +46,7 @@ void cpgen::setup(double t, double sst, double dst, double cogh, double legh) {
 
 void cpgen::start() {
   if (wstate == stopped) {
-    wstate = starting;
+    wstate = starting1;
     std::cout << "[cpgen] Start Walking" << std::endl;
   }
 }
@@ -56,26 +54,31 @@ void cpgen::start() {
 void cpgen::stop() {
   if (wstate == walk || wstate == step) {
     wstate = stop_next;
-    std::cout << "[cpgen] stopped Walking" << std::endl;
+    std::cout << "[cpgen] Stop Walking" << std::endl;
   }
 }
 
-void cpgen::restart() {
-  wstate = starting;
-  std::cout << "[cpgen] Restart Walking" << std::endl;
+void cpgen::estop() {
+  wstate = stopped;
+  std::cout << "[cpgen] Emergency Stop" << std::endl;
 }
 
 void cpgen::setLandPos(const Vector3& pose) {
   land_pos = pose;
 }
 
+void cpgen::changeSpeed(double scale) {
+  single_sup_time *= scale;
+  double_sup_time *= scale;
+  comtrack.setup(dt, single_sup_time, double_sup_time, cog_h);
+  legtrack.setup(dt, single_sup_time, double_sup_time, leg_h);
+}
+
 void cpgen::getWalkingPattern(Vector3* com_pos, Pose* right_leg_pos,
                               Pose* left_leg_pos) {
   static double step_delta_time = 0.0;
 
-  if (wstate == stopped) {
-    return;
-  }
+  if (wstate == stopped) return;
 
   // if finished a step, calc leg track and reference ZMP.
   if (designed_leg_track[0].empty()) {
@@ -83,13 +86,12 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Pose* right_leg_pos,
     calcEndCP();
     ref_zmp = comtrack.calcRefZMP(end_cp);
 
-    legtrack.getLegTrack(swingleg, land_pos_leg_w, designed_leg_track);
+    legtrack.getLegTrack(swingleg, wstate, land_pos_leg_w, designed_leg_track);
     step_delta_time = 0.0;
   }
 
   // push walking pattern
-  Vector3 com_pos_tmp = comtrack.getCoMTrack(end_cp, step_delta_time);
-  *com_pos = com_pos_tmp;
+  *com_pos = comtrack.getCoMTrack(end_cp, step_delta_time);
   *right_leg_pos = designed_leg_track[right].front();
   *left_leg_pos = designed_leg_track[left].front();
   designed_leg_track[right].pop_front();
@@ -97,7 +99,9 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Pose* right_leg_pos,
 
   // setting flag and time if finished a step
   if (designed_leg_track[0].empty()) {
-    if (wstate == starting) {
+    if (wstate == starting1) {
+      wstate = starting2;
+    } else if (wstate == starting2) {
       if (whichwalk == step) {
         wstate = step;
       } else {
@@ -122,13 +126,13 @@ void cpgen::calcEndCP() {
   calcLandPos();
   if (wstate == stopping1 || wstate == stopping2 || wstate == stop_next) {
     end_cp[0] = land_pos_leg_w[swingleg].p().x() + end_cp_offset[0];
-    end_cp[1] = (land_pos_leg_w[0].p().y() + land_pos_leg_w[1].p().y()) / 2;
+    end_cp[1] = (land_pos_leg_w[0].p().y() + land_pos_leg_w[1].p().y()) * 0.5;
   } else {
     end_cp[0] = land_pos_leg_w[swingleg].p().x() + end_cp_offset[0];
     if (swingleg == right) {
-      end_cp[1] = land_pos_leg_w[swingleg].p().y() - end_cp_offset[1];
-    } else {
       end_cp[1] = land_pos_leg_w[swingleg].p().y() + end_cp_offset[1];
+    } else {
+      end_cp[1] = land_pos_leg_w[swingleg].p().y() - end_cp_offset[1];
     }
   }
 }
@@ -141,7 +145,7 @@ void cpgen::calcLandPos() {
 
   // calc next step land position
   Vector2 next_land_distance(0.0, 0.0);
-  if (wstate == starting || wstate == step2walk) {  // walking start
+  if (wstate == starting1 || wstate == starting2 || wstate == step2walk) {
     next_land_distance[0] = land_pos.x();
     next_land_distance[1] = isCollisionLegs(land_pos.y()) ? land_pos.y() : 0.0;
   } else if (wstate == stop_next) {  // walking stop
@@ -243,6 +247,7 @@ void cpgen::setInitLandPos(const Affine3d init_leg_pos[]) {
 
     land_pos_leg_w[i].set(trans, q);
   }
+  feet_dist = fabs(land_pos_leg_w[0].p().y()) + fabs(land_pos_leg_w[1].p().y());
 }
 
 Pose cpgen::setInitLandPos(const Affine3d& init_leg_pos) {

@@ -18,6 +18,7 @@ void LegTrack::setup(double t, double sst, double dst, double legh) {
   dt = t;
   single_sup_time = sst;
   double_sup_time = dst;
+  step_time = single_sup_time + double_sup_time;
   leg_h = legh;
 }
 
@@ -25,8 +26,11 @@ void LegTrack::setup(double t, double sst, double dst, double legh) {
 // @param swingleg : swing leg flag
 // @param ref_landpos_leg_w[2] : Reference landing position. world coodinate.
 // @return return: r_leg_pos[2] : Designed both leg track. world coodinate.
-void LegTrack::getLegTrack(const rl swingleg, const Pose ref_landpos_leg_w[],
-                           std::deque<Pose, Eigen::aligned_allocator<Pose> > r_leg_pos[]) {
+void LegTrack::getLegTrack(
+    const rl swingleg, const walking_state wstate,
+    const Pose ref_landpos_leg_w[],
+    std::deque<Pose, Eigen::aligned_allocator<Pose> > r_leg_pos[])
+{
   std::deque<Pose, Eigen::aligned_allocator<Pose> > swing_leg_pos;
 
   std::deque<double> leg_pos_z;
@@ -34,34 +38,42 @@ void LegTrack::getLegTrack(const rl swingleg, const Pose ref_landpos_leg_w[],
   std::deque<Quaternion, Eigen::aligned_allocator<Quaternion> > sup_leg_quat;
   rl supleg = swingleg == right ? left : right;
 
-  // x, y
-  lerp_pose(before_landpos[swingleg], before_landpos[swingleg],
-            double_sup_time * 0.25, &swing_leg_pos);
-  lerp_pose(before_landpos[swingleg], ref_landpos_leg_w[swingleg],
-            single_sup_time, &swing_leg_pos);
-  lerp_pose(ref_landpos_leg_w[swingleg], ref_landpos_leg_w[swingleg],
-            double_sup_time * 0.25, &swing_leg_pos);
+  if (wstate == starting1 || wstate == stopping2) {
+    lerp_pose(before_landpos[swingleg],
+        before_landpos[swingleg], step_time, &swing_leg_pos);
+    lerp_same(init_pose[0].p().z(), step_time, &leg_pos_z);
+    lerp_same(before_landpos[swingleg].q(), step_time, &leg_pos_quat);
+    lerp_same(before_landpos[supleg].q(), step_time, &sup_leg_quat);
+  } else {
+    // x, y
+    lerp_pose(before_landpos[swingleg], before_landpos[swingleg],
+              double_sup_time * 0.25, &swing_leg_pos);
+    lerp_pose(before_landpos[swingleg], ref_landpos_leg_w[swingleg],
+              single_sup_time, &swing_leg_pos);
+    lerp_pose(ref_landpos_leg_w[swingleg], ref_landpos_leg_w[swingleg],
+              double_sup_time * 0.25, &swing_leg_pos);
 
-  // z
-  const double grand_h = init_pose[0].p().z();
-  lerp_same(grand_h, double_sup_time * 0.25, &leg_pos_z);
-  lerp_d(grand_h, grand_h + leg_h, single_sup_time * 0.5, &leg_pos_z);
-  lerp_d(grand_h + leg_h, grand_h, single_sup_time * 0.5, &leg_pos_z);
-  lerp_same(grand_h, double_sup_time * 0.25, &leg_pos_z);
+    // z
+    const double grand_h = init_pose[0].p().z();
+    lerp_same(grand_h, double_sup_time * 0.25, &leg_pos_z);
+    lerp_d(grand_h, grand_h + leg_h, single_sup_time * 0.5, &leg_pos_z);
+    lerp_d(grand_h + leg_h, grand_h, single_sup_time * 0.5, &leg_pos_z);
+    lerp_same(grand_h, double_sup_time * 0.25, &leg_pos_z);
 
-  // yaw
-  // swing leg
-  Quaternion start_quat = before_landpos[swingleg].q();
-  Quaternion finish_quat = ref_landpos_leg_w[swingleg].q();
-  lerp_same(start_quat, double_sup_time * 0.25, &leg_pos_quat);
-  lerp_q(start_quat, finish_quat, single_sup_time, &leg_pos_quat);
-  lerp_same(finish_quat, double_sup_time * 0.25, &leg_pos_quat);
-  // support leg
-  start_quat = before_landpos[supleg].q();
-  finish_quat = ref_landpos_leg_w[supleg].q();
-  lerp_same(start_quat, double_sup_time * 0.25, &sup_leg_quat);
-  lerp_q(start_quat, finish_quat, single_sup_time, &sup_leg_quat);
-  lerp_same(finish_quat, double_sup_time * 0.25, &sup_leg_quat);
+    // yaw
+    // swing leg
+    Quaternion start_quat = before_landpos[swingleg].q();
+    Quaternion finish_quat = ref_landpos_leg_w[swingleg].q();
+    lerp_same(start_quat, double_sup_time * 0.25, &leg_pos_quat);
+    lerp_q(start_quat, finish_quat, single_sup_time, &leg_pos_quat);
+    lerp_same(finish_quat, double_sup_time * 0.25, &leg_pos_quat);
+    // support leg
+    start_quat = before_landpos[supleg].q();
+    finish_quat = ref_landpos_leg_w[supleg].q();
+    lerp_same(start_quat, double_sup_time * 0.25, &sup_leg_quat);
+    lerp_q(start_quat, finish_quat, single_sup_time, &sup_leg_quat);
+    lerp_same(finish_quat, double_sup_time * 0.25, &sup_leg_quat);
+  }
 
   // union
   Pose sup_leg_pose;
@@ -75,6 +87,7 @@ void LegTrack::getLegTrack(const rl swingleg, const Pose ref_landpos_leg_w[],
     // support leg
     sup_leg_pose.set(before_landpos[supleg].p(), sup_leg_quat[i]);
     r_leg_pos[supleg].push_back(sup_leg_pose);
+    // std::cout << i << std::endl;
   }
 
   before_landpos[swingleg] = swing_leg_pos.back();

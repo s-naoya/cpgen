@@ -132,10 +132,11 @@ enum walking_state {
   stopping2 = 4,   // (walk or step) -> stop
   stop_next = 5,  // stopping when switch next step
 
-  starting = 6,  // stop -> (walk or step)
+  starting1 = 6,  // stop -> (walk or step)
+  starting2 = 7,
 
-  walk2step = 7,  // walk -> step
-  step2walk = 8   // step -> walk
+  walk2step = 8,  // walk -> step
+  step2walk = 9   // step -> walk
 };
 
 class Pose {

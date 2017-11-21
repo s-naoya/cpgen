@@ -19,7 +19,8 @@ class LegTrack {
                   Pose now_leg_pose[]);
   void setup(double t, double sst, double dst, double legh);
 
-  void getLegTrack(const rl swingleg, const Pose ref_landpos_leg_w[],
+  void getLegTrack(const rl swingleg, const walking_state wstate,
+                   const Pose ref_landpos_leg_w[],
                    std::deque<Pose, Eigen::aligned_allocator<Pose> > r_leg_pos[]);
 
  private:
@@ -37,6 +38,7 @@ class LegTrack {
   double dt;               // sampling time [s]
   double single_sup_time;  // [s]
   double double_sup_time;  // [s]
+  double step_time;
   double leg_h;            // height of up leg [m]
 
   Pose init_pose[2];
