@@ -206,6 +206,7 @@ void cpgen::calcLandPos() {
 }
 
 void cpgen::whichWalkOrStep() {
+  if (wstate != walk && wstate != step) {return;}
   if (land_pos.x() != 0.0 || land_pos.y() != 0.0) {
     if (whichwalk == step) {
       wstate = step2walk;

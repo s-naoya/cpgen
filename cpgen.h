@@ -16,7 +16,7 @@ class cpgen {
   void initialize(const Vector3& com, const Affine3d init_leg_pos[],
         const Quaternion i_base2leg[], const double endcpoff[],
         double t, double sst, double dst,
-        double cogh, double legh, double bothenbscale);
+        double cogh, double legh);
   void setup(double t, double sst, double dst, double cogh, double legh);
 
   void start();
@@ -28,7 +28,7 @@ class cpgen {
   Pose setInitLandPos(const Affine3d& init_leg_pos);
   void setLandPos(const Vector3& pose);
 
-  int getSwingleg() {return swingleg;}
+  rl getSwingleg() {return swingleg;}
   Vector2 getRefZMP() {return ref_zmp;}
   Vector2 getEndCP() {return end_cp;}
   int getWstate() {return wstate;}
