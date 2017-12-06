@@ -19,7 +19,7 @@ void cpgen::initialize(const Vector3& com, const Affine3d init_leg_pos[],
   // init Capture Point
   end_cp[0] = com[0];
   end_cp[1] = com[1];
-
+  ref_zmp = comtrack.calcRefZMP(end_cp);
   land_pos = Vector3::Zero();
 
   wstate = stopped;
@@ -87,6 +87,7 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Pose* right_leg_pos,
     ref_zmp = comtrack.calcRefZMP(end_cp);
 
     legtrack.getLegTrack(swingleg, wstate, land_pos_leg_w, designed_leg_track);
+    // legtrack.setStepVariable(land_pos_leg_w);
     step_delta_time = 0.0;
   }
 
