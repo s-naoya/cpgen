@@ -7,6 +7,7 @@ set(SOURCES
 cpgen.cpp
 com_track.cpp
 leg_track.cpp
+interpolation.cpp
 )
 
 # find_package(Eigen3 REQUIRED)

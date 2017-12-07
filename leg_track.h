@@ -4,6 +4,7 @@
 #include <deque>
 #include <iostream>
 
+#include "interpolation.h"
 #include "eigen_types.h"
 
 namespace cp {
