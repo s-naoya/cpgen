@@ -16,40 +16,37 @@ class LegTrack {
   LegTrack() {}
   ~LegTrack() {}
 
-  void init_setup(double t, double sst, double dst, double legh,
-                  Pose now_leg_pose[]);
-  void setup(double t, double sst, double dst, double legh);
-  void setStepVariable(const Pose ref_landpos_leg_w[], rl swingleg, walking_state ws);
-  void getLegTrack(const rl swingleg, const walking_state wstate,
-                   const Pose ref_landpos_leg_w[],
-                   std::deque<Pose, Eigen::aligned_allocator<Pose> > r_leg_pos[]);
+  void init_setup(double sampling_time, double single_sup_time,
+                  double double_sup_time, double legh, Pose now_leg_pose[]);
+  void setup(double sampling_time, double single_sup_time,
+             double double_sup_time, double legh);
+  void setStepVar(const Pose ref_landpose_w[], rl swingleg, walking_state wstate);
+  void getLegTrack(double t, Pose r_leg_pose[]);
+  // void getLegTrack(const rl swingleg, const walking_state wstate,
+  //                  const Pose ref_landpos_leg_w[],
+  //                  std::deque<Pose, Eigen::aligned_allocator<Pose> > r_leg_pos[]);
 
  private:
-  void lerp_pose(const Pose start, const Pose finish, double tf,
-                 std::deque<Pose, Eigen::aligned_allocator<Pose> >* input);
+  Quat lerp_q(Quat start, Quat finish, double normt);
 
-  void lerp_d(const double start, const double finish, double tf,
-              std::deque<double>* input);
-
-  void lerp_q(const Quaternion start, const Quaternion finish, double tf,
-              std::deque<Quaternion, Eigen::aligned_allocator<Quaternion> >* input);
-  void lerp_same(double x, double tf, std::deque<double>* input);
-  void lerp_same(Quaternion x, double tf, std::deque<Quaternion,Eigen::aligned_allocator<Quaternion> >* input);
-
-  double dt;               // sampling time [s]
-  double single_sup_time;  // [s]
-  double double_sup_time;  // [s]
-  double step_time;
-  double leg_h;            // height of up leg [m]
+  interpolation<double> inter_z_1, inter_z_2, inter_d;
+  interpolation<Vector2> inter_vec2;
+  interpolation<Vector3> inter_vec3;
+  double dt;     // sampling time [s]
+  double sst;    // single support time [s]
+  double dst;    // double support time [s]
+  double st;     // step time = dst + sst
+  double leg_h;  // height of up leg [m]
 
   // use this step
-  double sst_s, dst_s, dt_s, step_time_s;
-  Pose ref_landpos[2];
-  rl swing;
-  walking_state wstate;
+  double sst_s, dst_s, dt_s, st_s;
+  Pose ref_landpose[2];
+  Vector2 bfr, ref;
+  rl swl;  // swing leg
+  walking_state ws;
 
   Pose init_pose[2];
-  Pose before_landpos[2];
+  Pose bfr_landpose[2];
 };
 
 }  // namespace cp

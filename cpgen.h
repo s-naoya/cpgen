@@ -13,7 +13,7 @@ class cpgen {
   cpgen() {}
   ~cpgen() {}
 
-  void initialize(const Vector3& com, const Affine3d init_leg_pos[],
+  void initialize(const Vector3& com, const Affine3d init_leg_pose[],
         const Quaternion i_base2leg[], const double endcpoff[],
         double t, double sst, double dst,
         double cogh, double legh);
@@ -23,10 +23,10 @@ class cpgen {
   void stop();
   void estop();
   void changeSpeed(double scale);
-  void getWalkingPattern(Vector3* com_pos, Pose* right_leg_pos, Pose* left_leg_pos);
+  void getWalkingPattern(Vector3* com_pos, Pose* right_leg_pose, Pose* left_leg_pose);
 
-  Pose setInitLandPos(const Affine3d& init_leg_pos);
-  void setLandPos(const Vector3& pose);
+  Pose setInitLandPose(const Affine3d& init_leg_pose);
+  void setLandPos(const Vector3& pos);
 
   rl getSwingleg() {return swingleg;}
   Vector2 getRefZMP() {return ref_zmp;}
@@ -34,7 +34,7 @@ class cpgen {
   int getWstate() {return wstate;}
 
  private:
-  void setInitLandPos(const Affine3d init_leg_pos[]);
+  void setInitLandPose(const Affine3d init_leg_pose[]);
   void calcLandPos();
   void calcEndCP();
   void whichWalkOrStep();
@@ -64,9 +64,7 @@ class cpgen {
   Vector2 end_cp;           // end-of-CP world coodinate
   Vector2 ref_zmp;          // reference ZMP (calc by CoMTrack class)
 
-  Pose land_pos_leg_w[2];   // world coodinate reference land position
-  // designed leg track [right, left] world
-  std::deque<Pose, Eigen::aligned_allocator<Pose> > designed_leg_track[2];
+  Pose land_pose_leg_w[2];   // world coodinate reference land position
 };
 
 }  // namespace cp

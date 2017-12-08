@@ -4,7 +4,9 @@
 namespace cp {
 
 template <typename T>
-T interpolation<T>::lerp(T begin, T end, double normt) {
+T interpolation<T>::lerp(T begin, T end, double lent, double nowt) {
+    if (lent == 0.0) return begin;
+    double normt = nowt/lent;
     return (begin + (end - begin)*normt);
 }
 

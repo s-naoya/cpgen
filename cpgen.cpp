@@ -3,19 +3,19 @@
 namespace cp {
 
 // init_leg_pos: 0: right, 1: left, world coodinate(leg end link)
-void cpgen::initialize(const Vector3& com, const Affine3d init_leg_pos[],
+void cpgen::initialize(const Vector3& com, const Affine3d init_leg_pose[],
              const Quaternion i_base2leg[], const double endcpoff[],
              double t, double sst, double dst, double cogh, double legh) {
   // init variable setup
   swingleg = left;
   end_cp_offset[0] = endcpoff[0];  end_cp_offset[1] = endcpoff[1];
-  setInitLandPos(init_leg_pos);
+  setInitLandPose(init_leg_pose);
   base2leg[0] = i_base2leg[0];  base2leg[1] = i_base2leg[1];
 
   setup(t, sst, dst, cogh, legh);
   comtrack.init_setup(dt, single_sup_time, double_sup_time, cog_h, com);
   legtrack.init_setup(dt, single_sup_time, double_sup_time, leg_h,
-                      land_pos_leg_w);
+                      land_pose_leg_w);
   // init Capture Point
   end_cp[0] = com[0];
   end_cp[1] = com[1];
@@ -74,32 +74,31 @@ void cpgen::changeSpeed(double scale) {
   legtrack.setup(dt, single_sup_time, double_sup_time, leg_h);
 }
 
-void cpgen::getWalkingPattern(Vector3* com_pos, Pose* right_leg_pos,
-                              Pose* left_leg_pos) {
+void cpgen::getWalkingPattern(Vector3* com_pos,
+                              Pose* right_leg_pose, Pose* left_leg_pose) {
   static double step_delta_time = 0.0;
 
   if (wstate == stopped) return;
 
   // if finished a step, calc leg track and reference ZMP.
-  if (designed_leg_track[0].empty()) {
+  if (step_delta_time >= double_sup_time + single_sup_time) {
     swingleg = swingleg == right ? left : right;
     calcEndCP();
     ref_zmp = comtrack.calcRefZMP(end_cp);
 
-    legtrack.getLegTrack(swingleg, wstate, land_pos_leg_w, designed_leg_track);
-    // legtrack.setStepVariable(land_pos_leg_w);
+    legtrack.setStepVar(land_pose_leg_w, swingleg, wstate);
     step_delta_time = 0.0;
   }
 
   // push walking pattern
+  Pose leg_pose[2];
   *com_pos = comtrack.getCoMTrack(end_cp, step_delta_time);
-  *right_leg_pos = designed_leg_track[right].front();
-  *left_leg_pos = designed_leg_track[left].front();
-  designed_leg_track[right].pop_front();
-  designed_leg_track[left].pop_front();
+  legtrack.getLegTrack(step_delta_time, leg_pose);
+  *right_leg_pose = leg_pose[0];
+  *left_leg_pose  = leg_pose[1];
 
   // setting flag and time if finished a step
-  if (designed_leg_track[0].empty()) {
+  if (step_delta_time >= double_sup_time + single_sup_time) {
     if (wstate == starting1) {
       wstate = starting2;
     } else if (wstate == starting2) {
@@ -126,14 +125,14 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Pose* right_leg_pos,
 void cpgen::calcEndCP() {
   calcLandPos();
   if (wstate == stopping1 || wstate == stopping2 || wstate == stop_next) {
-    end_cp[0] = land_pos_leg_w[swingleg].p().x() + end_cp_offset[0];
-    end_cp[1] = (land_pos_leg_w[0].p().y() + land_pos_leg_w[1].p().y()) * 0.5;
+    end_cp[0] = land_pose_leg_w[swingleg].p().x() + end_cp_offset[0];
+    end_cp[1] = (land_pose_leg_w[0].p().y() + land_pose_leg_w[1].p().y()) * 0.5;
   } else {
-    end_cp[0] = land_pos_leg_w[swingleg].p().x() + end_cp_offset[0];
+    end_cp[0] = land_pose_leg_w[swingleg].p().x() + end_cp_offset[0];
     if (swingleg == right) {
-      end_cp[1] = land_pos_leg_w[swingleg].p().y() + end_cp_offset[1];
+      end_cp[1] = land_pose_leg_w[swingleg].p().y() + end_cp_offset[1];
     } else {
-      end_cp[1] = land_pos_leg_w[swingleg].p().y() - end_cp_offset[1];
+      end_cp[1] = land_pose_leg_w[swingleg].p().y() - end_cp_offset[1];
     }
   }
 }
@@ -188,19 +187,19 @@ void cpgen::calcLandPos() {
 
   // set next landing position
   // swing leg
-  Vector3 swing_p(land_pos_leg_w[swingleg].p().x() + next_land_distance[0],
-                  land_pos_leg_w[swingleg].p().y() + next_land_distance[1],
+  Vector3 swing_p(land_pose_leg_w[swingleg].p().x() + next_land_distance[0],
+                  land_pose_leg_w[swingleg].p().y() + next_land_distance[1],
                   0.0);
-  Quaternion swing_q = land_pos_leg_w[swingleg].q() * next_swing_q;
+  Quaternion swing_q = land_pose_leg_w[swingleg].q() * next_swing_q;
   // support leg
   rl supleg = swingleg == right ? left : right;
-  Vector3 sup_p(land_pos_leg_w[supleg].p().x(), land_pos_leg_w[supleg].p().y(),
+  Vector3 sup_p(land_pose_leg_w[supleg].p().x(), land_pose_leg_w[supleg].p().y(),
                 0.0);
-  Quaternion sup_q = land_pos_leg_w[supleg].q() * next_sup_q;  // union angle
+  Quaternion sup_q = land_pose_leg_w[supleg].q() * next_sup_q;  // union angle
 
   // set next landing position
-  land_pos_leg_w[swingleg].set(swing_p, swing_q);
-  land_pos_leg_w[supleg].set(sup_p, sup_q);
+  land_pose_leg_w[swingleg].set(swing_p, swing_q);
+  land_pose_leg_w[supleg].set(sup_p, sup_q);
 
   before_land_pos = land_pos;
   before_land_dis = next_land_distance;
@@ -241,20 +240,20 @@ double cpgen::isCollisionLegs(double yn, double yb) {
   }
 }
 
-// initialze "land_pos_leg_w"
-void cpgen::setInitLandPos(const Affine3d init_leg_pos[]) {
+// initialze "land_pose_leg_w"
+void cpgen::setInitLandPose(const Affine3d init_leg_pose[]) {
   for (int i = 0; i < 2; ++i) {
-    Vector3 trans = init_leg_pos[i].translation();
-    Quaternion q = Quaternion(init_leg_pos[i].rotation());
+    Vector3 trans = init_leg_pose[i].translation();
+    Quaternion q = Quaternion(init_leg_pose[i].rotation());
 
-    land_pos_leg_w[i].set(trans, q);
+    land_pose_leg_w[i].set(trans, q);
   }
-  feet_dist = fabs(land_pos_leg_w[0].p().y()) + fabs(land_pos_leg_w[1].p().y());
+  feet_dist = fabs(land_pose_leg_w[0].p().y()) + fabs(land_pose_leg_w[1].p().y());
 }
 
-Pose cpgen::setInitLandPos(const Affine3d& init_leg_pos) {
-  Vector3 trans = init_leg_pos.translation();
-  Quaternion q = Quaternion(init_leg_pos.rotation());
+Pose cpgen::setInitLandPose(const Affine3d& init_leg_pose) {
+  Vector3 trans = init_leg_pose.translation();
+  Quaternion q = Quaternion(init_leg_pose.rotation());
   cp::Pose pose(trans, q);
   return pose;
 }
