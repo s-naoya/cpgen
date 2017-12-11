@@ -1,5 +1,6 @@
 #include "cpgen.h"
 
+
 namespace cp {
 
 // init_leg_pos: 0: right, 1: left, world coodinate(leg end link)
@@ -14,8 +15,7 @@ void cpgen::initialize(const Vector3& com, const Affine3d init_leg_pose[],
 
   setup(t, sst, dst, cogh, legh);
   comtrack.init_setup(dt, single_sup_time, double_sup_time, cog_h, com);
-  legtrack.init_setup(dt, single_sup_time, double_sup_time, leg_h,
-                      land_pose_leg_w);
+  legtrack.init_setup(dt, single_sup_time, double_sup_time, leg_h, init_pose);
   // init Capture Point
   end_cp[0] = com[0];
   end_cp[1] = com[1];
@@ -24,7 +24,7 @@ void cpgen::initialize(const Vector3& com, const Affine3d init_leg_pose[],
 
   wstate = stopped;
 
-  std::cout << "[cpgen] activate" << std::endl;
+  std::cout << "[cpgen] initialize finish" << std::endl;
 }
 
 // always can change these value
@@ -76,7 +76,7 @@ void cpgen::changeSpeed(double scale) {
 
 void cpgen::getWalkingPattern(Vector3* com_pos,
                               Pose* right_leg_pose, Pose* left_leg_pose) {
-  static double step_delta_time = 0.0;
+  static double step_delta_time = double_sup_time + single_sup_time + 1.0;
 
   if (wstate == stopped) return;
 
@@ -86,7 +86,10 @@ void cpgen::getWalkingPattern(Vector3* com_pos,
     calcEndCP();
     ref_zmp = comtrack.calcRefZMP(end_cp);
 
-    legtrack.setStepVar(land_pose_leg_w, swingleg, wstate);
+    // std::cout << "[cpgen] land right p: " << land_pose_w[right].p() << std::endl;
+    // std::cout << "[cpgen] land left  p: " << land_pose_w[left].p() << std::endl;
+
+    legtrack.setStepVar(land_pose_w, swingleg, wstate);
     step_delta_time = 0.0;
   }
 
@@ -98,7 +101,7 @@ void cpgen::getWalkingPattern(Vector3* com_pos,
   *left_leg_pose  = leg_pose[1];
 
   // setting flag and time if finished a step
-  if (step_delta_time >= double_sup_time + single_sup_time) {
+  if (step_delta_time == 0.0) {
     if (wstate == starting1) {
       wstate = starting2;
     } else if (wstate == starting2) {
@@ -125,14 +128,14 @@ void cpgen::getWalkingPattern(Vector3* com_pos,
 void cpgen::calcEndCP() {
   calcLandPos();
   if (wstate == stopping1 || wstate == stopping2 || wstate == stop_next) {
-    end_cp[0] = land_pose_leg_w[swingleg].p().x() + end_cp_offset[0];
-    end_cp[1] = (land_pose_leg_w[0].p().y() + land_pose_leg_w[1].p().y()) * 0.5;
+    end_cp[0] = land_pose_w[swingleg].p().x() + end_cp_offset[0];
+    end_cp[1] = (land_pose_w[0].p().y() + land_pose_w[1].p().y()) * 0.5;
   } else {
-    end_cp[0] = land_pose_leg_w[swingleg].p().x() + end_cp_offset[0];
+    end_cp[0] = land_pose_w[swingleg].p().x() + end_cp_offset[0];
     if (swingleg == right) {
-      end_cp[1] = land_pose_leg_w[swingleg].p().y() + end_cp_offset[1];
+      end_cp[1] = land_pose_w[swingleg].p().y() + end_cp_offset[1];
     } else {
-      end_cp[1] = land_pose_leg_w[swingleg].p().y() - end_cp_offset[1];
+      end_cp[1] = land_pose_w[swingleg].p().y() - end_cp_offset[1];
     }
   }
 }
@@ -187,19 +190,24 @@ void cpgen::calcLandPos() {
 
   // set next landing position
   // swing leg
-  Vector3 swing_p(land_pose_leg_w[swingleg].p().x() + next_land_distance[0],
-                  land_pose_leg_w[swingleg].p().y() + next_land_distance[1],
-                  0.0);
-  Quaternion swing_q = land_pose_leg_w[swingleg].q() * next_swing_q;
+  Vector3 swing_p(land_pose_w[swingleg].p().x() + next_land_distance[0],
+                  land_pose_w[swingleg].p().y() + next_land_distance[1],
+                  init_pose[swingleg].p().z());
+  Quaternion swing_q = land_pose_w[swingleg].q() * next_swing_q;
   // support leg
   rl supleg = swingleg == right ? left : right;
-  Vector3 sup_p(land_pose_leg_w[supleg].p().x(), land_pose_leg_w[supleg].p().y(),
-                0.0);
-  Quaternion sup_q = land_pose_leg_w[supleg].q() * next_sup_q;  // union angle
+  Vector3 sup_p(land_pose_w[supleg].p().x(), land_pose_w[supleg].p().y(),
+                init_pose[supleg].p().z());
+  Quaternion sup_q = land_pose_w[supleg].q() * next_sup_q;  // union angle
+
+  // std::cout << "[cpgen] init z: " << init_pose[right].p().z() << ", " << init_pose[left].p().z() << std::endl;
+  // std::cout << "[cpgen] aaaa left  p: " << sup_p << std::endl;
+  // std::cout << "[cpgen] aaaa right p: " << swing_p << std::endl;
+  // std::cout << "[cpgen] aaaa left  p: " << sup_p << std::endl;
 
   // set next landing position
-  land_pose_leg_w[swingleg].set(swing_p, swing_q);
-  land_pose_leg_w[supleg].set(sup_p, sup_q);
+  land_pose_w[swingleg].set(swing_p, swing_q);
+  land_pose_w[supleg].set(sup_p, sup_q);
 
   before_land_pos = land_pos;
   before_land_dis = next_land_distance;
@@ -240,22 +248,20 @@ double cpgen::isCollisionLegs(double yn, double yb) {
   }
 }
 
-// initialze "land_pose_leg_w"
+// initialze "land_pose_w"
 void cpgen::setInitLandPose(const Affine3d init_leg_pose[]) {
   for (int i = 0; i < 2; ++i) {
+    std::cout << "[cpgen] i : " << i << ", init: " << init_leg_pose[i].matrix() << std::endl;
     Vector3 trans = init_leg_pose[i].translation();
     Quaternion q = Quaternion(init_leg_pose[i].rotation());
+    std::cout << "[cpgen] i: " << i << ", trans: " << trans << std::endl;
 
-    land_pose_leg_w[i].set(trans, q);
+    init_pose[i].set(trans, q);
+    land_pose_w[i].set(init_pose[i]);
+    std::cout << "[cpgen] i: " << i << ", init: " << init_pose[i].p() << std::endl;
+
   }
-  feet_dist = fabs(land_pose_leg_w[0].p().y()) + fabs(land_pose_leg_w[1].p().y());
-}
-
-Pose cpgen::setInitLandPose(const Affine3d& init_leg_pose) {
-  Vector3 trans = init_leg_pose.translation();
-  Quaternion q = Quaternion(init_leg_pose.rotation());
-  cp::Pose pose(trans, q);
-  return pose;
+  feet_dist = fabs(land_pose_w[0].p().y()) + fabs(land_pose_w[1].p().y());
 }
 
 }  // namespace cp

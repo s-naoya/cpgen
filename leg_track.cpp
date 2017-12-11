@@ -7,11 +7,15 @@ namespace cp {
 void LegTrack::init_setup(double sampling_time, double single_sup_time,
                           double double_sup_time, double legh,
                           Pose now_leg_pose[2]) {
+  init_pose[right].set(now_leg_pose[right]);
+  init_pose[left].set(now_leg_pose[left]);
+  bfr_landpose[right].set(now_leg_pose[right]);
+  bfr_landpose[left].set(now_leg_pose[left]);
+  ref_landpose[right].set(now_leg_pose[right]);
+  ref_landpose[left].set(now_leg_pose[left]);
+
+  ground_h = init_pose[0].p().z();
   setup(sampling_time, single_sup_time, double_sup_time, legh);
-  init_pose[0] = now_leg_pose[0];
-  init_pose[1] = now_leg_pose[1];
-  bfr_landpose[0] = now_leg_pose[0];
-  bfr_landpose[1] = now_leg_pose[1];
 }
 
 // always can change these value
@@ -21,7 +25,7 @@ void LegTrack::setup(double sampling_time, double single_sup_time,
   sst = single_sup_time;
   dst = double_sup_time;
   st  = single_sup_time + double_sup_time;
-  leg_h = legh;
+  leg_h = legh + ground_h;
 }
 
 // set variable of a step
@@ -36,44 +40,55 @@ void LegTrack::setStepVar(
   swl = swingleg;
   ws = wstate;
   // set next landing pos
-  bfr_landpose[0] = ref_landpose[0];
-  bfr_landpose[1] = ref_landpose[1];
-  ref_landpose[0] = ref_landpose_leg_w[0];
-  ref_landpose[1] = ref_landpose_leg_w[1];
+  bfr_landpose[right].set(ref_landpose[right]);
+  bfr_landpose[left].set(ref_landpose[left]);
+  ref_landpose[right].set(ref_landpose_leg_w[right]);
+  ref_landpose[left].set(ref_landpose_leg_w[left]);
 
+  // std::cout << "[cpgen] bfr right p: " << bfr_landpose[right].p() << std::endl;
+  // std::cout << "[cpgen] bfr left  p: " << bfr_landpose[left].p() << std::endl;
+  std::cout << "[cpgen] ref right p: " << ref_landpose[right].p() << std::endl;
+  std::cout << "[cpgen] ref left  p: " << ref_landpose[left].p() << std::endl;
   bfr << bfr_landpose[swl].p().x(), bfr_landpose[swl].p().y();
   ref << ref_landpose[swl].p().x(), ref_landpose[swl].p().y();
 
-  inter_z_1.setInter5(0.0, 0.0, 0.0, leg_h, 0.0, 0.0, sst*0.5);
-  inter_z_2.setInter5(leg_h, 0.0, 0.0, 0.0, 0.0, 0.0, sst*0.5);
+  inter_z_1.setInter5(ground_h, 0.0, 0.0, leg_h, 0.0, 0.0, sst*0.5);
+  inter_z_2.setInter5(leg_h, 0.0, 0.0, ground_h, 0.0, 0.0, sst*0.5);
 }
 
 void LegTrack::getLegTrack(double t, Pose r_leg_pose[]) {
   rl spl = swl == right ? left : right;
   if (ws == starting1 || ws == stopping2) {
-      r_leg_pose[right] = bfr_landpose[right];
-      r_leg_pose[left]  = bfr_landpose[left];
+      r_leg_pose[right].set(bfr_landpose[right]);
+      r_leg_pose[left].set(bfr_landpose[left]);
   } else {
     if (t < dst_s*0.5) {
-        r_leg_pose[swl].p() = bfr_landpose[swl].p();
-    } else if (t < sst_s*0.5) {
-        double sst_s_t = t - dst_s;
+        std::cout << "[cpgen] dst 1";
+        r_leg_pose[swl].set(bfr_landpose[swl].p());
+        r_leg_pose[swl].set(bfr_landpose[swl].q());
+    } else if (t < dst_s*0.5 + sst_s*0.5) {
+        double sst_s_t = t - dst_s*0.5;
+        std::cout << "[cpgen] sst 1 sst_s_t: " << sst_s_t;
         Vector2 nex = inter_vec2.lerp(bfr, ref, sst_s, sst_s_t);
-        r_leg_pose[swl].p().x() = nex.x();
-        r_leg_pose[swl].p().y() = nex.y();
-        r_leg_pose[swl].p().z() = inter_z_1.inter5(sst_s_t);
-    } else if (t < sst_s) {
-        double sst_s_t = t - dst_s;
-        double sst_s_ht = t - dst_s - sst_s*0.5;
+        r_leg_pose[swl].set(Vector3(nex.x(), nex.y(), inter_z_1.inter5(sst_s_t)));
+        r_leg_pose[swl].set(bfr_landpose[swl].q());
+    } else if (t < dst_s*0.5 + sst_s) {
+        double sst_s_t = t - dst_s*0.5;
+        double sst_s_ht = sst_s_t - sst_s*0.5;
+        std::cout << "[cpgen] sst 2 sst_s_ht: " << sst_s_ht;
         Vector2 nex = inter_vec2.lerp(bfr, ref, sst_s, sst_s_t);
-        r_leg_pose[swl].p().x() = nex.x();
-        r_leg_pose[swl].p().y() = nex.y();
-        r_leg_pose[swl].p().z() = inter_z_2.inter5(sst_s_ht);
+        r_leg_pose[swl].set(Vector3(nex.x(), nex.y(), inter_z_2.inter5(sst_s_ht)));
+        r_leg_pose[swl].set(ref_landpose[swl].q());
     } else if (t <= st_s) {
-        r_leg_pose[swl].p() = ref_landpose[swl].p();
+        std::cout << "[cpgen] dst 2";
+        r_leg_pose[swl].set(ref_landpose[swl].p());
+        r_leg_pose[swl].set(ref_landpose[swl].q());
+    } else {
+        std::cout << "[cpgen] else!!";
     }
-    r_leg_pose[spl] = bfr_landpose[spl];
+    r_leg_pose[spl].set(bfr_landpose[spl]);
   }
+  std::cout << "[cpgen] t: " << t << "\tz: " << r_leg_pose[right].p().z() << ", " << r_leg_pose[left].p().z() << std::endl;
 }
 
 //   if (wstate == starting1 ||  wstate == stopping2) {

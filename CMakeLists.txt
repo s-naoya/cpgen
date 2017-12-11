@@ -18,4 +18,4 @@ include_directories(/usr/include/eigen3)
 add_library(cpgen SHARED ${SOURCES})
 
 install(TARGETS cpgen LIBRARY DESTINATION lib)
-install(FILES cpgen.h com_track.h leg_track.h eigen_types.h DESTINATION include)
+install(FILES cpgen.h com_track.h leg_track.h eigen_types.h interpolation.h DESTINATION include)

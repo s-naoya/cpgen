@@ -159,6 +159,10 @@ class Pose {
     this->pp = translation;
     this->qq = R;
   }
+  void set(const Vector3& translation) {this->pp = translation;}
+  void set(const Quat& rotation) {this->qq = rotation;}
+  void set(const Matrix3& R) {this->qq = R;}
+  void set(const Pose& pose) {this->pp = pose.p();  this->qq = pose.q();}
   Vector3& p() { return pp; }
   const Vector3& p() const { return pp; }
   Quat& q() { return qq; }
@@ -172,6 +176,12 @@ class Pose {
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
+inline Pose affine2pose(const Affine3d& init_leg_pose) {
+  Vector3 trans = init_leg_pose.translation();
+  Quaternion q = Quaternion(init_leg_pose.rotation());
+  cp::Pose pose(trans, q);
+  return pose;
+}
 }
 
 #endif

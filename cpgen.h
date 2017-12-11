@@ -25,7 +25,6 @@ class cpgen {
   void changeSpeed(double scale);
   void getWalkingPattern(Vector3* com_pos, Pose* right_leg_pose, Pose* left_leg_pose);
 
-  Pose setInitLandPose(const Affine3d& init_leg_pose);
   void setLandPos(const Vector3& pos);
 
   rl getSwingleg() {return swingleg;}
@@ -64,7 +63,8 @@ class cpgen {
   Vector2 end_cp;           // end-of-CP world coodinate
   Vector2 ref_zmp;          // reference ZMP (calc by CoMTrack class)
 
-  Pose land_pose_leg_w[2];   // world coodinate reference land position
+  Pose land_pose_w[2];   // world coodinate reference land position
+  Pose init_pose[2];
 };
 
 }  // namespace cp

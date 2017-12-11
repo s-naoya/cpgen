@@ -1,7 +1,6 @@
 #ifndef CPGEN_LEG_TRACK_H_
 #define CPGEN_LEG_TRACK_H_
 
-#include <deque>
 #include <iostream>
 
 #include "interpolation.h"
@@ -31,13 +30,13 @@ class LegTrack {
 
   interpolation<double> inter_z_1, inter_z_2, inter_d;
   interpolation<Vector2> inter_vec2;
-  interpolation<Vector3> inter_vec3;
   double dt;     // sampling time [s]
   double sst;    // single support time [s]
   double dst;    // double support time [s]
   double st;     // step time = dst + sst
   double leg_h;  // height of up leg [m]
 
+  double ground_h;
   // use this step
   double sst_s, dst_s, dt_s, st_s;
   Pose ref_landpose[2];
