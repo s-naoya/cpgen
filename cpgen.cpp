@@ -94,14 +94,15 @@ void cpgen::getWalkingPattern(Vector3* com_pos,
   }
 
   // push walking pattern
-  Pose leg_pose[2];
+  static Pose leg_pose[2];
   *com_pos = comtrack.getCoMTrack(end_cp, step_delta_time);
   legtrack.getLegTrack(step_delta_time, leg_pose);
   *right_leg_pose = leg_pose[0];
   *left_leg_pose  = leg_pose[1];
 
   // setting flag and time if finished a step
-  if (step_delta_time == 0.0) {
+  step_delta_time += dt;
+  if (step_delta_time >= double_sup_time + single_sup_time) {
     if (wstate == starting1) {
       wstate = starting2;
     } else if (wstate == starting2) {
@@ -122,7 +123,6 @@ void cpgen::getWalkingPattern(Vector3* com_pos,
       wstate = walk;
     }
   }
-  step_delta_time += dt;
 }
 
 void cpgen::calcEndCP() {

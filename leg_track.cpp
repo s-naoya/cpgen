@@ -63,32 +63,32 @@ void LegTrack::getLegTrack(double t, Pose r_leg_pose[]) {
       r_leg_pose[left].set(bfr_landpose[left]);
   } else {
     if (t < dst_s*0.5) {
-        std::cout << "[cpgen] dst 1";
+        // std::cout << "[cpgen] dst 1";
         r_leg_pose[swl].set(bfr_landpose[swl].p());
         r_leg_pose[swl].set(bfr_landpose[swl].q());
     } else if (t < dst_s*0.5 + sst_s*0.5) {
         double sst_s_t = t - dst_s*0.5;
-        std::cout << "[cpgen] sst 1 sst_s_t: " << sst_s_t;
+        // std::cout << "[cpgen] sst 1 sst_s_t: " << sst_s_t;
         Vector2 nex = inter_vec2.lerp(bfr, ref, sst_s, sst_s_t);
         r_leg_pose[swl].set(Vector3(nex.x(), nex.y(), inter_z_1.inter5(sst_s_t)));
         r_leg_pose[swl].set(bfr_landpose[swl].q());
     } else if (t < dst_s*0.5 + sst_s) {
         double sst_s_t = t - dst_s*0.5;
         double sst_s_ht = sst_s_t - sst_s*0.5;
-        std::cout << "[cpgen] sst 2 sst_s_ht: " << sst_s_ht;
+        // std::cout << "[cpgen] sst 2 sst_s_ht: " << sst_s_ht;
         Vector2 nex = inter_vec2.lerp(bfr, ref, sst_s, sst_s_t);
         r_leg_pose[swl].set(Vector3(nex.x(), nex.y(), inter_z_2.inter5(sst_s_ht)));
         r_leg_pose[swl].set(ref_landpose[swl].q());
     } else if (t <= st_s) {
-        std::cout << "[cpgen] dst 2";
+        // std::cout << "[cpgen] dst 2";
         r_leg_pose[swl].set(ref_landpose[swl].p());
         r_leg_pose[swl].set(ref_landpose[swl].q());
     } else {
-        std::cout << "[cpgen] else!!";
+        // std::cout << "[cpgen] else!!";
     }
     r_leg_pose[spl].set(bfr_landpose[spl]);
   }
-  std::cout << "[cpgen] t: " << t << "\tz: " << r_leg_pose[right].p().z() << ", " << r_leg_pose[left].p().z() << std::endl;
+  // std::cout << "[cpgen] t: " << t << "\tz: " << r_leg_pose[right].p().z() << ", " << r_leg_pose[left].p().z() << std::endl;
 }
 
 //   if (wstate == starting1 ||  wstate == stopping2) {
