@@ -18,6 +18,8 @@ class cpgen {
         double t, double sst, double dst,
         double cogh, double legh);
   void setup(double t, double sst, double dst, double cogh, double legh);
+  void getInitWalkingPattern(Vector3* com_pos,
+                             Pose* right_leg_pose, Pose* left_leg_pose);
 
   void start();
   void stop();

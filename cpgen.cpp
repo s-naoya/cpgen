@@ -74,6 +74,15 @@ void cpgen::changeSpeed(double scale) {
   legtrack.setup(dt, single_sup_time, double_sup_time, leg_h);
 }
 
+void cpgen::getInitWalkingPattern(Vector3* com_pos,
+                                  Pose* right_leg_pose,
+                                  Pose* left_leg_pose) {
+  *right_leg_pose = init_pose[0];
+  *left_leg_pose  = init_pose[1];
+  comtrack.calcRefZMP(end_cp);
+  *com_pos = comtrack.getCoMTrack(end_cp, 0.0);
+}
+
 void cpgen::getWalkingPattern(Vector3* com_pos,
                               Pose* right_leg_pose, Pose* left_leg_pose) {
   static double step_delta_time = double_sup_time + single_sup_time + 1.0;
@@ -199,11 +208,6 @@ void cpgen::calcLandPos() {
   Vector3 sup_p(land_pose_w[supleg].p().x(), land_pose_w[supleg].p().y(),
                 init_pose[supleg].p().z());
   Quaternion sup_q = land_pose_w[supleg].q() * next_sup_q;  // union angle
-
-  // std::cout << "[cpgen] init z: " << init_pose[right].p().z() << ", " << init_pose[left].p().z() << std::endl;
-  // std::cout << "[cpgen] aaaa left  p: " << sup_p << std::endl;
-  // std::cout << "[cpgen] aaaa right p: " << swing_p << std::endl;
-  // std::cout << "[cpgen] aaaa left  p: " << sup_p << std::endl;
 
   // set next landing position
   land_pose_w[swingleg].set(swing_p, swing_q);

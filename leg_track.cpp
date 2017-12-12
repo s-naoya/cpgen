@@ -47,8 +47,8 @@ void LegTrack::setStepVar(
 
   // std::cout << "[cpgen] bfr right p: " << bfr_landpose[right].p() << std::endl;
   // std::cout << "[cpgen] bfr left  p: " << bfr_landpose[left].p() << std::endl;
-  std::cout << "[cpgen] ref right p: " << ref_landpose[right].p() << std::endl;
-  std::cout << "[cpgen] ref left  p: " << ref_landpose[left].p() << std::endl;
+  // std::cout << "[cpgen] ref right p: " << ref_landpose[right].p() << std::endl;
+  // std::cout << "[cpgen] ref left  p: " << ref_landpose[left].p() << std::endl;
   bfr << bfr_landpose[swl].p().x(), bfr_landpose[swl].p().y();
   ref << ref_landpose[swl].p().x(), ref_landpose[swl].p().y();
 
