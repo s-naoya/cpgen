@@ -5,3 +5,4 @@ install_manifest.txt
 *.so
 Makefile
 .vscode/
+*.swp
