@@ -26,10 +26,9 @@ class LegTrack {
   //                  std::deque<Pose, Eigen::aligned_allocator<Pose> > r_leg_pos[]);
 
  private:
-  Quat lerp_q(Quat start, Quat finish, double normt);
-
   interpolation<double> inter_z_1, inter_z_2, inter_d;
   interpolation<Vector2> inter_vec2;
+  interpolation<Quat> inter_q;
   double dt;     // sampling time [s]
   double sst;    // single support time [s]
   double dst;    // double support time [s]

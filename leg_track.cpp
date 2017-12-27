@@ -49,9 +49,11 @@ void LegTrack::setStepVar(
   // std::cout << "[cpgen] bfr left  p: " << bfr_landpose[left].p() << std::endl;
   // std::cout << "[cpgen] ref right p: " << ref_landpose[right].p() << std::endl;
   // std::cout << "[cpgen] ref left  p: " << ref_landpose[left].p() << std::endl;
+
+  // for (x, y) lerp
   bfr << bfr_landpose[swl].p().x(), bfr_landpose[swl].p().y();
   ref << ref_landpose[swl].p().x(), ref_landpose[swl].p().y();
-
+  // for z lerp
   inter_z_1.setInter5(ground_h, 0.0, 0.0, leg_h, 0.0, 0.0, sst*0.5);
   inter_z_2.setInter5(leg_h, 0.0, 0.0, ground_h, 0.0, 0.0, sst*0.5);
 }
@@ -64,55 +66,35 @@ void LegTrack::getLegTrack(double t, Pose r_leg_pose[]) {
   } else {
     if (t < dst_s*0.5) {
         // std::cout << "[cpgen] dst 1";
-        r_leg_pose[swl].set(bfr_landpose[swl].p());
-        r_leg_pose[swl].set(bfr_landpose[swl].q());
+        r_leg_pose[swl].set(bfr_landpose[swl]);
+        r_leg_pose[spl].set(bfr_landpose[spl].q());
     } else if (t < dst_s*0.5 + sst_s*0.5) {
         double sst_s_t = t - dst_s*0.5;
         // std::cout << "[cpgen] sst 1 sst_s_t: " << sst_s_t;
         Vector2 nex = inter_vec2.lerp(bfr, ref, sst_s, sst_s_t);
         r_leg_pose[swl].set(Vector3(nex.x(), nex.y(), inter_z_1.inter5(sst_s_t)));
-        r_leg_pose[swl].set(bfr_landpose[swl].q());
+        r_leg_pose[swl].set(inter_q.lerp(bfr_landpose[swl].q(), ref_landpose[swl].q(), sst_s, sst_s_t));
+        r_leg_pose[spl].set(inter_q.lerp(bfr_landpose[spl].q(), ref_landpose[spl].q(), sst_s, sst_s_t));
     } else if (t < dst_s*0.5 + sst_s) {
         double sst_s_t = t - dst_s*0.5;
         double sst_s_ht = sst_s_t - sst_s*0.5;
         // std::cout << "[cpgen] sst 2 sst_s_ht: " << sst_s_ht;
         Vector2 nex = inter_vec2.lerp(bfr, ref, sst_s, sst_s_t);
         r_leg_pose[swl].set(Vector3(nex.x(), nex.y(), inter_z_2.inter5(sst_s_ht)));
-        r_leg_pose[swl].set(ref_landpose[swl].q());
+        r_leg_pose[swl].set(inter_q.lerp(bfr_landpose[swl].q(), ref_landpose[swl].q(), sst_s, sst_s_t));
+        r_leg_pose[spl].set(inter_q.lerp(bfr_landpose[spl].q(), ref_landpose[spl].q(), sst_s, sst_s_t));
     } else if (t <= st_s) {
         // std::cout << "[cpgen] dst 2";
-        r_leg_pose[swl].set(ref_landpose[swl].p());
-        r_leg_pose[swl].set(ref_landpose[swl].q());
+        r_leg_pose[swl].set(ref_landpose[swl]);
+        r_leg_pose[spl].set(ref_landpose[spl]);
     } else {
         // std::cout << "[cpgen] else!!";
     }
-    r_leg_pose[spl].set(bfr_landpose[spl]);
+    r_leg_pose[spl].set(bfr_landpose[spl].p());
   }
   // std::cout << "[cpgen] t: " << t << "\tz: " << r_leg_pose[right].p().z() << ", " << r_leg_pose[left].p().z() << std::endl;
 }
 
-//   if (wstate == starting1 ||  wstate == stopping2) {
-//     lerp_pose(before_landpos[swingleg],
-//         before_landpos[swingleg], step_time, &swing_leg_pos);
-//     lerp_same(init_pose[0].p().z(), step_time, &leg_pos_z);
-//     lerp_same(before_landpos[swingleg].q(), step_time, &leg_pos_quat);
-//     lerp_same(before_landpos[supleg].q(), step_time, &sup_leg_quat);
-//   } else {
-//     // x, y
-//     lerp_pose(before_landpos[swingleg], before_landpos[swingleg],
-//               double_sup_time * 0.5, &swing_leg_pos);
-//     lerp_pose(before_landpos[swingleg], ref_landpos_leg_w[swingleg],
-//               single_sup_time, &swing_leg_pos);
-//     lerp_pose(ref_landpos_leg_w[swingleg], ref_landpos_leg_w[swingleg],
-//               double_sup_time * 0.5, &swing_leg_pos);
-// 
-//     // z
-//     const double grand_h = init_pose[0].p().z();
-//     lerp_same(grand_h, double_sup_time * 0.5, &leg_pos_z);
-//     lerp_d(grand_h, grand_h + leg_h, single_sup_time * 0.5, &leg_pos_z);
-//     lerp_d(grand_h + leg_h, grand_h, single_sup_time * 0.5, &leg_pos_z);
-//     lerp_same(grand_h, double_sup_time * 0.5, &leg_pos_z);
-// 
 //     // yaw
 //     // swing leg
 //     Quaternion start_quat = before_landpos[swingleg].q();
@@ -127,28 +109,5 @@ void LegTrack::getLegTrack(double t, Pose r_leg_pose[]) {
 //     lerp_q(start_quat, finish_quat, single_sup_time, &sup_leg_quat);
 //     lerp_same(finish_quat, double_sup_time * 0.5, &sup_leg_quat);
 //   }
-// 
-//   // union
-//   Pose sup_leg_pose;
-//   for (int i = 0, n = swing_leg_pos.size(); i < n; ++i) {
-//     // swing leg
-//     Vector3 tmp_p(swing_leg_pos[i].p().x(), swing_leg_pos[i].p().y(),
-//                   leg_pos_z[i]);
-//     swing_leg_pos[i].set(tmp_p, leg_pos_quat[i]);
-//     r_leg_pos[swingleg].push_back(swing_leg_pos[i]);
-// 
-//     // support leg
-//     sup_leg_pose.set(before_landpos[supleg].p(), sup_leg_quat[i]);
-//     r_leg_pos[supleg].push_back(sup_leg_pose);
-//     // std::cout << i << std::endl;
-//   }
-// 
-//   before_landpos[swingleg] = swing_leg_pos.back();
-//   before_landpos[supleg] = sup_leg_pose;
-// }
 
-
-Quat LegTrack::lerp_q(Quat start, Quat finish, double normt) {
-    return start.slerp(normt, finish);
-}
 }  // namespace cp
