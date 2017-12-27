@@ -4,8 +4,9 @@
 namespace cp {
 
 // init_leg_pos: 0: right, 1: left, world coodinate(leg end link)
-void cpgen::initialize(const Vector3& com, const Affine3d init_leg_pose[],
-             const Quaternion i_base2leg[], const double endcpoff[],
+void cpgen::initialize(const Vector3& com, const Quat& waist_r,
+             const Affine3d init_leg_pose[], const Quat i_base2leg[],
+             const double endcpoff[],
              double t, double sst, double dst, double cogh, double legh) {
   // init variable setup
   swingleg = left;
@@ -14,7 +15,7 @@ void cpgen::initialize(const Vector3& com, const Affine3d init_leg_pose[],
   base2leg[0] = i_base2leg[0];  base2leg[1] = i_base2leg[1];
 
   setup(t, sst, dst, cogh, legh);
-  comtrack.init_setup(dt, single_sup_time, double_sup_time, cog_h, com);
+  comtrack.init_setup(dt, single_sup_time, double_sup_time, cog_h, com, waist_r);
   legtrack.init_setup(dt, single_sup_time, double_sup_time, leg_h, init_pose);
   // init Capture Point
   end_cp[0] = com[0];
@@ -74,16 +75,16 @@ void cpgen::changeSpeed(double scale) {
   legtrack.setup(dt, single_sup_time, double_sup_time, leg_h);
 }
 
-void cpgen::getInitWalkingPattern(Vector3* com_pos,
-                                  Pose* right_leg_pose,
-                                  Pose* left_leg_pose) {
+void cpgen::getInitWalkingPattern(Vector3* com_pos, Quat* waist_r,
+                                  Pose* right_leg_pose, Pose* left_leg_pose) {
   *right_leg_pose = init_pose[0];
   *left_leg_pose  = init_pose[1];
   comtrack.calcRefZMP(end_cp);
   *com_pos = comtrack.getCoMTrack(end_cp, 0.0);
+  *waist_r = comtrack.getWaistTrack(0.0);
 }
 
-void cpgen::getWalkingPattern(Vector3* com_pos,
+void cpgen::getWalkingPattern(Vector3* com_pos, Quat* waist_r,
                               Pose* right_leg_pose, Pose* left_leg_pose) {
   static double step_delta_time = double_sup_time + single_sup_time + 1.0;
 
@@ -105,6 +106,7 @@ void cpgen::getWalkingPattern(Vector3* com_pos,
   // push walking pattern
   static Pose leg_pose[2];
   *com_pos = comtrack.getCoMTrack(end_cp, step_delta_time);
+  *waist_r = comtrack.getWaistTrack(step_delta_time);
   legtrack.getLegTrack(step_delta_time, leg_pose);
   *right_leg_pose = leg_pose[0];
   *left_leg_pose  = leg_pose[1];
@@ -126,6 +128,7 @@ void cpgen::getWalkingPattern(Vector3* com_pos,
       wstate = stopping2;
     } else if (wstate == stopping2) {
       wstate = stopped;
+      std::cout << "[cpgen] Stopped" << std::endl;
     } else if (wstate == walk2step) {
       wstate = step;
     } else if (wstate == step2walk) {
@@ -255,15 +258,11 @@ double cpgen::isCollisionLegs(double yn, double yb) {
 // initialze "land_pose_w"
 void cpgen::setInitLandPose(const Affine3d init_leg_pose[]) {
   for (int i = 0; i < 2; ++i) {
-    std::cout << "[cpgen] i : " << i << ", init: " << init_leg_pose[i].matrix() << std::endl;
     Vector3 trans = init_leg_pose[i].translation();
     Quaternion q = Quaternion(init_leg_pose[i].rotation());
-    std::cout << "[cpgen] i: " << i << ", trans: " << trans << std::endl;
 
     init_pose[i].set(trans, q);
     land_pose_w[i].set(init_pose[i]);
-    std::cout << "[cpgen] i: " << i << ", init: " << init_pose[i].p() << std::endl;
-
   }
   feet_dist = fabs(land_pose_w[0].p().y()) + fabs(land_pose_w[1].p().y());
 }

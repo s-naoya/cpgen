@@ -13,19 +13,20 @@ class cpgen {
   cpgen() {}
   ~cpgen() {}
 
-  void initialize(const Vector3& com, const Affine3d init_leg_pose[],
+  void initialize(const Vector3& com, const Quat& waist_r, const Affine3d init_leg_pose[],
         const Quaternion i_base2leg[], const double endcpoff[],
         double t, double sst, double dst,
         double cogh, double legh);
   void setup(double t, double sst, double dst, double cogh, double legh);
-  void getInitWalkingPattern(Vector3* com_pos,
+  void getInitWalkingPattern(Vector3* com_pos, Quat* waist_r,
                              Pose* right_leg_pose, Pose* left_leg_pose);
 
   void start();
   void stop();
   void estop();
   void changeSpeed(double scale);
-  void getWalkingPattern(Vector3* com_pos, Pose* right_leg_pose, Pose* left_leg_pose);
+  void getWalkingPattern(Vector3* com_pos, Quat* waist_r,
+                         Pose* right_leg_pose, Pose* left_leg_pose);
 
   void setLandPos(const Vector3& pos);
 
