@@ -1,7 +1,7 @@
 // original is "choreonoid"
 
-#ifndef ROBOTIS_OP_CPWALK_EIGEN_TYPES_H_
-#define ROBOTIS_OP_CPWALK_EIGEN_TYPES_H_
+#ifndef CPGEN_EIGEN_TYPES_H_
+#define CPGEN_EIGEN_TYPES_H_
 
 #include <cmath>
 
@@ -143,6 +143,7 @@ class Pose {
   Vector3 pp;
   Quat qq;
   Affine3 af;
+  Vector3 r;
 
  public:
   Pose() {}
@@ -173,6 +174,10 @@ class Pose {
     af = tr * qq;
     return af;
   }
+  Vector3& rpy() {
+    r = q2rpy(qq);
+    return r;
+  }
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
@@ -184,4 +189,4 @@ inline Pose affine2pose(const Affine3d& init_leg_pose) {
 }
 }
 
-#endif
+#endif  // CPGEN_EIGEN_TYPES_H_
