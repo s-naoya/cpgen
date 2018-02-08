@@ -52,10 +52,7 @@ class cpgen {
   double double_sup_time;  // double support time [s]
   double cog_h;            // height of center of gravity [m]
   double leg_h;            // height of up leg [m]
-  double foot_wd_size;     // foot size of width [m]
-  double feet_dist;        // distance of feet [m]
   double end_cp_offset[2]; // end-of-CP offset  (x, y)[m]
-  double both_end_scale;
 
   Quaternion base2leg[2];
 

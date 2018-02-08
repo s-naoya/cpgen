@@ -96,9 +96,6 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Quat* waist_r,
     calcEndCP();
     ref_zmp = comtrack.calcRefZMP(end_cp);
 
-    // std::cout << "[cpgen] land right p: " << land_pose_w[right].p() << std::endl;
-    // std::cout << "[cpgen] land left  p: " << land_pose_w[left].p() << std::endl;
-
     legtrack.setStepVar(land_pose_w, swingleg, wstate);
     step_delta_time = 0.0;
   }
@@ -264,7 +261,6 @@ void cpgen::setInitLandPose(const Affine3d init_leg_pose[]) {
     init_pose[i].set(trans, q);
     land_pose_w[i].set(init_pose[i]);
   }
-  feet_dist = fabs(land_pose_w[0].p().y()) + fabs(land_pose_w[1].p().y());
 }
 
 }  // namespace cp

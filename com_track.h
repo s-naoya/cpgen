@@ -16,9 +16,11 @@ class CoMTrack {
   ~CoMTrack() {}
 
 
-  void init_setup(double sampling_time, double single_sup_time, double double_sup_time, double cog_h,
+  void init_setup(double sampling_time, double single_sup_time,
+                  double double_sup_time, double cog_h,
                   const Vector3& com, const Quat& waist_r);
-  void setup(double t, double single_sup_time, double double_sup_time, double cog_h);
+  void setup(double t, double single_sup_time,
+             double double_sup_time, double cog_h);
 
   Vector3 getCoMTrack(const Vector2& end_cp, double step_delta_time);
   Quat getWaistTrack(double step_delta_time);
@@ -29,10 +31,10 @@ class CoMTrack {
   Vector2 calcCPTrack(double step_delta_time);
   void calcCoMTrack(const Vector2& ref_cp);
 
-  double st;    // single + double [s]
   double dt;    // sampling time [s]
   double sst;   // single support time [s]
   double dst;   // double support time [s]
+  double st;    // step_time = single + double [s]
   double cogh;  // center of gravity height [m]
   double w;
 
