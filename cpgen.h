@@ -54,7 +54,7 @@ class cpgen {
   double leg_h;            // height of up leg [m]
   double end_cp_offset[2]; // end-of-CP offset  (x, y)[m]
 
-  Quaternion base2leg[2];
+  Quat base2leg[2];
 
   Vector3 land_pos;         // landing position x[m], y[m], theta[rad]
   rl swingleg;              // which swing leg(0: right, 1: left)
@@ -63,7 +63,8 @@ class cpgen {
   Vector2 end_cp;           // end-of-CP world coodinate
   Vector2 ref_zmp;          // reference ZMP (calc by CoMTrack class)
 
-  Pose land_pose_w[2];   // world coodinate reference land position
+  Pose ref_land_pose[2];    // world coodinate reference land position
+  Quat ref_waist_r;
   Pose init_pose[2];
 };
 

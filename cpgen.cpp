@@ -96,7 +96,7 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Quat* waist_r,
     calcEndCP();
     ref_zmp = comtrack.calcRefZMP(end_cp);
 
-    legtrack.setStepVar(land_pose_w, swingleg, wstate);
+    legtrack.setStepVar(ref_land_pose, swingleg, wstate);
     step_delta_time = 0.0;
   }
 
@@ -137,14 +137,14 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Quat* waist_r,
 void cpgen::calcEndCP() {
   calcLandPos();
   if (wstate == stopping1 || wstate == stopping2 || wstate == stop_next) {
-    end_cp[0] = land_pose_w[swingleg].p().x() + end_cp_offset[0];
-    end_cp[1] = (land_pose_w[0].p().y() + land_pose_w[1].p().y()) * 0.5;
+    end_cp[0] = ref_land_pose[swingleg].p().x() + end_cp_offset[0];
+    end_cp[1] = (ref_land_pose[0].p().y() + ref_land_pose[1].p().y()) * 0.5;
   } else {
-    end_cp[0] = land_pose_w[swingleg].p().x() + end_cp_offset[0];
+    end_cp[0] = ref_land_pose[swingleg].p().x() + end_cp_offset[0];
     if (swingleg == right) {
-      end_cp[1] = land_pose_w[swingleg].p().y() + end_cp_offset[1];
+      end_cp[1] = ref_land_pose[swingleg].p().y() + end_cp_offset[1];
     } else {
-      end_cp[1] = land_pose_w[swingleg].p().y() - end_cp_offset[1];
+      end_cp[1] = ref_land_pose[swingleg].p().y() - end_cp_offset[1];
     }
   }
 }
@@ -199,19 +199,19 @@ void cpgen::calcLandPos() {
 
   // set next landing position
   // swing leg
-  Vector3 swing_p(land_pose_w[swingleg].p().x() + next_land_distance[0],
-                  land_pose_w[swingleg].p().y() + next_land_distance[1],
+  Vector3 swing_p(ref_land_pose[swingleg].p().x() + next_land_distance[0],
+                  ref_land_pose[swingleg].p().y() + next_land_distance[1],
                   init_pose[swingleg].p().z());
-  Quaternion swing_q = land_pose_w[swingleg].q() * next_swing_q;
+  Quaternion swing_q = ref_land_pose[swingleg].q() * next_swing_q;
   // support leg
   rl supleg = swingleg == right ? left : right;
-  Vector3 sup_p(land_pose_w[supleg].p().x(), land_pose_w[supleg].p().y(),
+  Vector3 sup_p(ref_land_pose[supleg].p().x(), ref_land_pose[supleg].p().y(),
                 init_pose[supleg].p().z());
-  Quaternion sup_q = land_pose_w[supleg].q() * next_sup_q;  // union angle
+  Quaternion sup_q = ref_land_pose[supleg].q() * next_sup_q;  // union angle
 
   // set next landing position
-  land_pose_w[swingleg].set(swing_p, swing_q);
-  land_pose_w[supleg].set(sup_p, sup_q);
+  ref_land_pose[swingleg].set(swing_p, swing_q);
+  ref_land_pose[supleg].set(sup_p, sup_q);
 
   before_land_pos = land_pos;
   before_land_dis = next_land_distance;
@@ -252,14 +252,14 @@ double cpgen::isCollisionLegs(double yn, double yb) {
   }
 }
 
-// initialze "land_pose_w"
+// initialze "ref_land_pose"
 void cpgen::setInitLandPose(const Affine3d init_leg_pose[]) {
   for (int i = 0; i < 2; ++i) {
     Vector3 trans = init_leg_pose[i].translation();
     Quaternion q = Quaternion(init_leg_pose[i].rotation());
 
     init_pose[i].set(trans, q);
-    land_pose_w[i].set(init_pose[i]);
+    ref_land_pose[i].set(init_pose[i]);
   }
 }
 
