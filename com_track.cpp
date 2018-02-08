@@ -35,7 +35,7 @@ Vector3 CoMTrack::getCoMTrack(const Vector2& end_cp, double step_delta_time) {
   return ref_com;
 }
 
-// call only changed swing leg (same timing of "LegTrack::getLegTrack")
+// call only changed swing legG
 // @param end_cp : end CP of this step
 // @return : reference ZMP point of this step
 Vector2 CoMTrack::calcRefZMP(const Vector2& end_cp) {
