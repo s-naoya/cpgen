@@ -15,7 +15,7 @@ void LegTrack::init_setup(double sampling_time, double single_sup_time,
   ref_landpose[left].set(now_leg_pose[left]);
 
   ground_h = init_pose[0].p().z();
-  waist = waist_r;
+  waist = waist_r;  ref_waist_r = waist_r;
   setup(sampling_time, single_sup_time, double_sup_time, legh);
 }
 
@@ -31,8 +31,8 @@ void LegTrack::setup(double sampling_time, double single_sup_time,
 
 // set variable of a step
 // call only switch swing leg
-void LegTrack::setStepVar(
-    const Pose ref_landpose_leg_w[], rl swingleg, walking_state wstate) {
+void LegTrack::setStepVar(const Pose ref_landpose_leg_w[],
+     const Quat &ref_waist, rl swingleg, walking_state wstate) {
   // set time var of a step
   sst_s = sst;
   dst_s = dst;
@@ -45,11 +45,10 @@ void LegTrack::setStepVar(
   bfr_landpose[left].set(ref_landpose[left]);
   ref_landpose[right].set(ref_landpose_leg_w[right]);
   ref_landpose[left].set(ref_landpose_leg_w[left]);
+  bfr_waist_r = ref_waist_r;
+  ref_waist_r = ref_waist;
 
-  // std::cout << "[cpgen] bfr right p: " << bfr_landpose[right].p() << std::endl;
-  // std::cout << "[cpgen] bfr left  p: " << bfr_landpose[left].p() << std::endl;
-  // std::cout << "[cpgen] ref right p: " << ref_landpose[right].p() << std::endl;
-  // std::cout << "[cpgen] ref left  p: " << ref_landpose[left].p() << std::endl;
+  // std::cout << "[cpgen] ref yaw: " << ref_landpose[right].rpy().z() << ", " << ref_landpose[left].rpy().z() << std::endl;
 
   // for (x, y) lerp
   bfr << bfr_landpose[swl].p().x(), bfr_landpose[swl].p().y();
@@ -74,6 +73,7 @@ void LegTrack::getLegTrack(double t, Pose r_leg_pose[]) {
         r_leg_pose[swl].set(Vector3(nex.x(), nex.y(), inter_z_1.inter5(sst_s_t)));
         r_leg_pose[swl].set(inter_q.lerp(bfr_landpose[swl].q(), ref_landpose[swl].q(), sst_s, sst_s_t));
         r_leg_pose[spl].set(inter_q.lerp(bfr_landpose[spl].q(), ref_landpose[spl].q(), sst_s, sst_s_t));
+        waist = inter_q.lerp(bfr_waist_r, ref_waist_r, sst_s, sst_s_t);
     } else if (t < dst_s*0.5 + sst_s) {
         double sst_s_t = t - dst_s*0.5;
         double sst_s_ht = sst_s_t - sst_s*0.5;
@@ -81,6 +81,7 @@ void LegTrack::getLegTrack(double t, Pose r_leg_pose[]) {
         r_leg_pose[swl].set(Vector3(nex.x(), nex.y(), inter_z_2.inter5(sst_s_ht)));
         r_leg_pose[swl].set(inter_q.lerp(bfr_landpose[swl].q(), ref_landpose[swl].q(), sst_s, sst_s_t));
         r_leg_pose[spl].set(inter_q.lerp(bfr_landpose[spl].q(), ref_landpose[spl].q(), sst_s, sst_s_t));
+        waist = inter_q.lerp(bfr_waist_r, ref_waist_r, sst_s, sst_s_t);
     } else if (t <= st_s) {
         r_leg_pose[swl].set(ref_landpose[swl]);
         r_leg_pose[spl].set(ref_landpose[spl]);

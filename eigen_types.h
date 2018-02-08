@@ -92,20 +92,21 @@ inline double deg2rad(double deg) { return TO_RADIAN * deg; }
 inline double deg2rad(int deg) { return TO_RADIAN * deg; }
 
 inline Quaternion rpy2q(double roll, double pitch, double yaw) {
-  AngleAxisd rollAngle(roll, Vector3d::UnitZ());
-  AngleAxisd pitchAngle(pitch, Vector3d::UnitY());
-  AngleAxisd yawAngle(yaw, Vector3d::UnitX());
+  // AngleAxisd rollAngle(roll, Vector3d::UnitZ());
+  // AngleAxisd pitchAngle(pitch, Vector3d::UnitY());
+  // AngleAxisd yawAngle(yaw, Vector3d::UnitX());
 
-  Quaternion q = rollAngle * yawAngle * pitchAngle;
+  // Quaternion q = rollAngle * yawAngle * pitchAngle;
+  Quat q = AngleAxisd(roll, Vector3::UnitX())
+           * AngleAxisd(pitch, Vector3::UnitY())
+           * AngleAxisd(yaw,   Vector3::UnitZ());
   return q;
 }
 
 inline Matrix3 rpy2mat(double roll, double pitch, double yaw) {
-  AngleAxisd rollAngle(roll, Vector3d::UnitZ());
-  AngleAxisd pitchAngle(pitch, Vector3d::UnitY());
-  AngleAxisd yawAngle(yaw, Vector3d::UnitX());
-
-  Quaternion q = rollAngle * yawAngle * pitchAngle;
+  Quat q = AngleAxisd(roll, Vector3::UnitX())
+           * AngleAxisd(pitch, Vector3::UnitY())
+           * AngleAxisd(yaw,   Vector3::UnitZ());
   Matrix3 rotationMatrix = q.matrix();
   return rotationMatrix;
 }

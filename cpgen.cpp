@@ -13,6 +13,7 @@ void cpgen::initialize(const Vector3& com, const Quat& waist_r,
   end_cp_offset[0] = endcpoff[0];  end_cp_offset[1] = endcpoff[1];
   setInitLandPose(init_leg_pose);
   base2leg[0] = i_base2leg[0];  base2leg[1] = i_base2leg[1];
+  ref_waist_r = waist_r;
 
   setup(t, sst, dst, cogh, legh);
   comtrack.init_setup(dt, single_sup_time, double_sup_time, cog_h, com);
@@ -65,7 +66,7 @@ void cpgen::estop() {
 }
 
 void cpgen::setLandPos(const Vector3& pose) {
-  land_pos = pose;
+  land_pos = pose;  land_pos.z() = deg2rad(land_pos.z());
 }
 
 void cpgen::changeSpeed(double scale) {
@@ -93,10 +94,11 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Quat* waist_r,
   // if finished a step, calc leg track and reference ZMP.
   if (step_delta_time >= double_sup_time + single_sup_time) {
     swingleg = swingleg == right ? left : right;
+    // std::cout << "[cpgen] land_pos : " << land_pos << std::endl;
     calcEndCP();
     ref_zmp = comtrack.calcRefZMP(end_cp);
 
-    legtrack.setStepVar(ref_land_pose, swingleg, wstate);
+    legtrack.setStepVar(ref_land_pose, ref_waist_r, swingleg, wstate);
     step_delta_time = 0.0;
   }
 
@@ -212,6 +214,10 @@ void cpgen::calcLandPos() {
   // set next landing position
   ref_land_pose[swingleg].set(swing_p, swing_q);
   ref_land_pose[supleg].set(sup_p, sup_q);
+  ref_waist_r = ref_waist_r * rpy2q(0, 0, land_pos.z());
+
+  std::cout << "[cpgen] ref yaw: " << ref_land_pose[right].rpy().z() << ", " << ref_land_pose[left].rpy().z() << std::endl;
+
 
   before_land_pos = land_pos;
   before_land_dis = next_land_distance;
