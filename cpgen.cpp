@@ -15,8 +15,8 @@ void cpgen::initialize(const Vector3& com, const Quat& waist_r,
   base2leg[0] = i_base2leg[0];  base2leg[1] = i_base2leg[1];
 
   setup(t, sst, dst, cogh, legh);
-  comtrack.init_setup(dt, single_sup_time, double_sup_time, cog_h, com, waist_r);
-  legtrack.init_setup(dt, single_sup_time, double_sup_time, leg_h, init_pose);
+  comtrack.init_setup(dt, single_sup_time, double_sup_time, cog_h, com);
+  legtrack.init_setup(dt, single_sup_time, double_sup_time, leg_h, init_pose, waist_r);
   // init Capture Point
   end_cp[0] = com[0];
   end_cp[1] = com[1];
@@ -81,7 +81,7 @@ void cpgen::getInitWalkingPattern(Vector3* com_pos, Quat* waist_r,
   *left_leg_pose  = init_pose[1];
   comtrack.calcRefZMP(end_cp);
   *com_pos = comtrack.getCoMTrack(end_cp, 0.0);
-  *waist_r = comtrack.getWaistTrack(0.0);
+  *waist_r = legtrack.getWaistTrack(0.0);
 }
 
 void cpgen::getWalkingPattern(Vector3* com_pos, Quat* waist_r,
@@ -103,7 +103,7 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Quat* waist_r,
   // push walking pattern
   static Pose leg_pose[2];
   *com_pos = comtrack.getCoMTrack(end_cp, step_delta_time);
-  *waist_r = comtrack.getWaistTrack(step_delta_time);
+  *waist_r = legtrack.getWaistTrack(step_delta_time);
   legtrack.getLegTrack(step_delta_time, leg_pose);
   *right_leg_pose = leg_pose[0];
   *left_leg_pose  = leg_pose[1];

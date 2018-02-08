@@ -16,11 +16,13 @@ class LegTrack {
   ~LegTrack() {}
 
   void init_setup(double sampling_time, double single_sup_time,
-                  double double_sup_time, double legh, Pose now_leg_pose[]);
+                  double double_sup_time, double legh, Pose now_leg_pose[],
+                  const Quat& waist_r);
   void setup(double sampling_time, double single_sup_time,
              double double_sup_time, double legh);
   void setStepVar(const Pose ref_landpose_w[], rl swingleg, walking_state wstate);
   void getLegTrack(double t, Pose r_leg_pose[]);
+  Quat getWaistTrack(double step_delta_time) {return waist;}
   // void getLegTrack(const rl swingleg, const walking_state wstate,
   //                  const Pose ref_landpos_leg_w[],
   //                  std::deque<Pose, Eigen::aligned_allocator<Pose> > r_leg_pos[]);
@@ -34,10 +36,12 @@ class LegTrack {
   double dst;    // double support time [s]
   double st;     // step time = dst + sst
   double leg_h;  // height of up leg [m]
-
   double ground_h;
+
   // use this step
   double sst_s, dst_s, dt_s, st_s;
+
+  Quat waist;
   Pose ref_landpose[2];
   Vector2 bfr, ref;
   rl swl;  // swing leg

@@ -6,9 +6,8 @@ namespace cp {
 // necesarry call this before call getCoMTrack
 void CoMTrack::init_setup(double sampling_time, double single_sup_time,
                           double double_sup_time, double cog_h,
-                          const Vector3& com, const Quat& waist_r) {
+                          const Vector3& com) {
   setup(sampling_time, single_sup_time, double_sup_time, cog_h);
-  waist = waist_r;
   now_cp << com[0], com[1];
   ref_zmp << com[0], com[1];
   ref_com << com[0], com[1], cogh;
@@ -34,10 +33,6 @@ Vector3 CoMTrack::getCoMTrack(const Vector2& end_cp, double step_delta_time) {
   Vector2 ref_cp = calcCPTrack(step_delta_time);
   calcCoMTrack(ref_cp);
   return ref_com;
-}
-
-Quat CoMTrack::getWaistTrack(double step_delta_time) {
-  return waist;
 }
 
 // call only changed swing leg (same timing of "LegTrack::getLegTrack")

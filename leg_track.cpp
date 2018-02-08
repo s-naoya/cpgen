@@ -3,10 +3,10 @@
 namespace cp {
 
 // setting initial value
-// necesarry call this before call getLegTrack
+// need to call this before call getLegTrack
 void LegTrack::init_setup(double sampling_time, double single_sup_time,
                           double double_sup_time, double legh,
-                          Pose now_leg_pose[2]) {
+                          Pose now_leg_pose[2], const Quat& waist_r) {
   init_pose[right].set(now_leg_pose[right]);
   init_pose[left].set(now_leg_pose[left]);
   bfr_landpose[right].set(now_leg_pose[right]);
@@ -15,6 +15,7 @@ void LegTrack::init_setup(double sampling_time, double single_sup_time,
   ref_landpose[left].set(now_leg_pose[left]);
 
   ground_h = init_pose[0].p().z();
+  waist = waist_r;
   setup(sampling_time, single_sup_time, double_sup_time, legh);
 }
 
@@ -65,12 +66,10 @@ void LegTrack::getLegTrack(double t, Pose r_leg_pose[]) {
       r_leg_pose[left].set(bfr_landpose[left]);
   } else {
     if (t < dst_s*0.5) {
-        // std::cout << "[cpgen] dst 1";
         r_leg_pose[swl].set(bfr_landpose[swl]);
         r_leg_pose[spl].set(bfr_landpose[spl].q());
     } else if (t < dst_s*0.5 + sst_s*0.5) {
         double sst_s_t = t - dst_s*0.5;
-        // std::cout << "[cpgen] sst 1 sst_s_t: " << sst_s_t;
         Vector2 nex = inter_vec2.lerp(bfr, ref, sst_s, sst_s_t);
         r_leg_pose[swl].set(Vector3(nex.x(), nex.y(), inter_z_1.inter5(sst_s_t)));
         r_leg_pose[swl].set(inter_q.lerp(bfr_landpose[swl].q(), ref_landpose[swl].q(), sst_s, sst_s_t));
@@ -78,21 +77,16 @@ void LegTrack::getLegTrack(double t, Pose r_leg_pose[]) {
     } else if (t < dst_s*0.5 + sst_s) {
         double sst_s_t = t - dst_s*0.5;
         double sst_s_ht = sst_s_t - sst_s*0.5;
-        // std::cout << "[cpgen] sst 2 sst_s_ht: " << sst_s_ht;
         Vector2 nex = inter_vec2.lerp(bfr, ref, sst_s, sst_s_t);
         r_leg_pose[swl].set(Vector3(nex.x(), nex.y(), inter_z_2.inter5(sst_s_ht)));
         r_leg_pose[swl].set(inter_q.lerp(bfr_landpose[swl].q(), ref_landpose[swl].q(), sst_s, sst_s_t));
         r_leg_pose[spl].set(inter_q.lerp(bfr_landpose[spl].q(), ref_landpose[spl].q(), sst_s, sst_s_t));
     } else if (t <= st_s) {
-        // std::cout << "[cpgen] dst 2";
         r_leg_pose[swl].set(ref_landpose[swl]);
         r_leg_pose[spl].set(ref_landpose[spl]);
-    } else {
-        // std::cout << "[cpgen] else!!";
     }
     r_leg_pose[spl].set(bfr_landpose[spl].p());
   }
-  // std::cout << "[cpgen] t: " << t << "\tz: " << r_leg_pose[right].p().z() << ", " << r_leg_pose[left].p().z() << std::endl;
 }
 
 //     // yaw

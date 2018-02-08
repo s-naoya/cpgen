@@ -18,12 +18,11 @@ class CoMTrack {
 
   void init_setup(double sampling_time, double single_sup_time,
                   double double_sup_time, double cog_h,
-                  const Vector3& com, const Quat& waist_r);
+                  const Vector3& com);
   void setup(double t, double single_sup_time,
              double double_sup_time, double cog_h);
 
   Vector3 getCoMTrack(const Vector2& end_cp, double step_delta_time);
-  Quat getWaistTrack(double step_delta_time);
   Vector2 calcRefZMP(const Vector2& end_cp);
 
  private:
@@ -43,7 +42,6 @@ class CoMTrack {
   double dt_s;
   double w_s;
 
-  Quat waist;
   Vector3 ref_com;
   Vector2 now_cp;
   Vector2 ref_zmp;
