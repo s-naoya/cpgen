@@ -56,7 +56,6 @@ typedef Eigen::Matrix2d Matrix2;
 typedef Eigen::Vector2d Vector2;
 typedef Eigen::Matrix3d Matrix3;
 typedef Eigen::Vector3d Vector3;
-// typedef Eigen::AlignedVector3<double> Vector3;
 typedef Eigen::Matrix4d Matrix4;
 typedef Eigen::Vector4d Vector4;
 typedef Eigen::VectorXd VectorX;
@@ -67,9 +66,6 @@ typedef Eigen::AngleAxisd AngleAxis;
 
 //! \deprecated
 typedef Eigen::Quaterniond Quat;
-
-typedef Eigen::Quaterniond Quaternion;
-
 typedef Eigen::Transform<double, 3, Eigen::AffineCompact> EPosition;
 
 // The followings should be removed later
@@ -97,26 +93,12 @@ inline Quat rpy2q(double roll, double pitch, double yaw) {
            * AngleAxisd(yaw,   Vector3::UnitZ());
   return q;
 }
-
-inline Matrix3 rpy2mat(double roll, double pitch, double yaw) {
-  Quat q = AngleAxisd(roll, Vector3::UnitX())
-           * AngleAxisd(pitch, Vector3::UnitY())
-           * AngleAxisd(yaw,   Vector3::UnitZ());
-  Matrix3 rotationMatrix = q.matrix();
-  return rotationMatrix;
-}
-
-inline Vector3 mat2rqy(Matrix3 mat) { return mat.eulerAngles(0, 1, 2); }
-inline Vector3 q2rpy(Quat q) {
-  return q.toRotationMatrix().eulerAngles(0, 1, 2);
-}
-inline Quat mat2q(Matrix3 mat) {
-  Quat q(mat); return q;
-}
+inline Matrix3 rpy2mat(double r, double p, double y){return rpy2q(r, p, y).matrix();}
+inline Vector3 mat2rpy(Matrix3 mat) { return mat.eulerAngles(0, 1, 2); }
+inline Vector3 q2rpy(Quat q) { return mat2rpy(q.toRotationMatrix()); }
+inline Quat mat2q(Matrix3 mat) {return Quat(mat);}
 
 enum rl { right, left, both };
-// enum walking_state { stopped, starting, walk, next_stop, stopping, stepping
-// };
 enum walking_state {
   // state
   stopped = 0,
@@ -143,26 +125,22 @@ class Pose {
 
  public:
   Pose() {}
-  Pose(const Vector3& translation, const Quat& rotation)
-      : pp(translation), qq(rotation) {}
-  Pose(const Vector3& translation, const Matrix3& rotation)
-      : pp(translation), qq(rotation) {}
+  Pose(const Vector3& trans, const Quat& q)
+      : pp(trans), qq(q) {}
+  Pose(const Vector3& trans, const Matrix3& mat)
+      : pp(trans), qq(mat) {}
 
-  void set(const Vector3& translation, const Quat& rotation) {
-    this->pp = translation;
-    this->qq = rotation;
-  }
-  void set(const Vector3& translation, const Matrix3& R) {
-    this->pp = translation;
-    this->qq = R;
-  }
-  void set(const Vector3& translation) {this->pp = translation;}
-  void set(const Quat& rotation) {this->qq = rotation;}
-  void set(const Matrix3& R) {this->qq = R;}
+  void set(const Vector3& trans, const Quat& q) { this->pp = trans; this->qq = q; }
+  void set(const Vector3& trans, const Matrix3& mat) { this->pp = trans; this->qq = mat; }
+  void set(const Vector3& trans) {this->pp = trans;}
+  void set(const Quat& q) {this->qq = q;}
+  void set(const Matrix3& mat) {this->qq = mat;}
   void set(const Pose& pose) {this->pp = pose.p();  this->qq = pose.q();}
+  void set(const Affine3d& aff) {set(aff.translation(), Quat(aff.rotation()));}
+
   Vector3& p() { return pp; }
-  const Vector3& p() const { return pp; }
   Quat& q() { return qq; }
+  const Vector3& p() const { return pp; }
   const Quat& q() const { return qq; }
 
   Affine3& affine() {
@@ -170,10 +148,7 @@ class Pose {
     af = tr * qq;
     return af;
   }
-  Vector3& rpy() {
-    r = q2rpy(qq);
-    return r;
-  }
+  Vector3& rpy() { r = q2rpy(qq); return r;}
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
