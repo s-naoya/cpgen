@@ -91,12 +91,7 @@ inline double rad2deg(double rad) { return TO_DEGREE * rad; }
 inline double deg2rad(double deg) { return TO_RADIAN * deg; }
 inline double deg2rad(int deg) { return TO_RADIAN * deg; }
 
-inline Quaternion rpy2q(double roll, double pitch, double yaw) {
-  // AngleAxisd rollAngle(roll, Vector3d::UnitZ());
-  // AngleAxisd pitchAngle(pitch, Vector3d::UnitY());
-  // AngleAxisd yawAngle(yaw, Vector3d::UnitX());
-
-  // Quaternion q = rollAngle * yawAngle * pitchAngle;
+inline Quat rpy2q(double roll, double pitch, double yaw) {
   Quat q = AngleAxisd(roll, Vector3::UnitX())
            * AngleAxisd(pitch, Vector3::UnitY())
            * AngleAxisd(yaw,   Vector3::UnitZ());
@@ -112,7 +107,7 @@ inline Matrix3 rpy2mat(double roll, double pitch, double yaw) {
 }
 
 inline Vector3 mat2rqy(Matrix3 mat) { return mat.eulerAngles(0, 1, 2); }
-inline Vector3 q2rpy(Quaternion q) {
+inline Vector3 q2rpy(Quat q) {
   return q.toRotationMatrix().eulerAngles(0, 1, 2);
 }
 inline Quat mat2q(Matrix3 mat) {
@@ -184,7 +179,7 @@ class Pose {
 };
 inline Pose affine2pose(const Affine3d& init_leg_pose) {
   Vector3 trans = init_leg_pose.translation();
-  Quaternion q = Quaternion(init_leg_pose.rotation());
+  Quat q = Quat(init_leg_pose.rotation());
   cp::Pose pose(trans, q);
   return pose;
 }

@@ -17,7 +17,8 @@ void cpgen::initialize(const Vector3& com, const Quat& waist_r,
 
   setup(t, sst, dst, cogh, legh);
   comtrack.init_setup(dt, single_sup_time, double_sup_time, cog_h, com);
-  legtrack.init_setup(dt, single_sup_time, double_sup_time, leg_h, init_pose, waist_r);
+  legtrack.init_setup(dt, single_sup_time, double_sup_time,
+                      leg_h, init_feet_pose, waist_r);
   // init Capture Point
   end_cp[0] = com[0];
   end_cp[1] = com[1];
@@ -78,8 +79,8 @@ void cpgen::changeSpeed(double scale) {
 
 void cpgen::getInitWalkingPattern(Vector3* com_pos, Quat* waist_r,
                                   Pose* right_leg_pose, Pose* left_leg_pose) {
-  *right_leg_pose = init_pose[0];
-  *left_leg_pose  = init_pose[1];
+  *right_leg_pose = init_feet_pose[0];
+  *left_leg_pose  = init_feet_pose[1];
   comtrack.calcRefZMP(end_cp);
   *com_pos = comtrack.getCoMTrack(end_cp, 0.0);
   *waist_r = legtrack.getWaistTrack(0.0);
@@ -94,7 +95,6 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Quat* waist_r,
   // if finished a step, calc leg track and reference ZMP.
   if (step_delta_time >= double_sup_time + single_sup_time) {
     swingleg = swingleg == right ? left : right;
-    // std::cout << "[cpgen] land_pos : " << land_pos << std::endl;
     calcEndCP();
     ref_zmp = comtrack.calcRefZMP(end_cp);
 
@@ -155,10 +155,10 @@ void cpgen::calcEndCP() {
 void cpgen::calcLandPos() {
   whichWalkOrStep();
   static Vector3 before_land_pos(land_pos.x(), land_pos.y(), 0.0);
-  static Vector2 before_land_dis(land_pos.x(), land_pos.y());
+  static Vector3 before_land_dis(land_pos.x(), land_pos.y(), 0.0);
 
   // calc next step land position
-  Vector2 next_land_distance(0.0, 0.0);
+  Vector3 next_land_distance(0.0, 0.0, 0.0);
   if (wstate == starting1 || wstate == starting2 || wstate == step2walk) {
     next_land_distance[0] = land_pos.x();
     next_land_distance[1] = isCollisionLegs(land_pos.y()) ? land_pos.y() : 0.0;
@@ -180,44 +180,19 @@ void cpgen::calcLandPos() {
   }
 
   // calc next step land rotation
-  Quaternion next_swing_q, next_sup_q;
-  if (land_pos.z() > 0.0) {
-    if (swingleg == right) {
-      next_swing_q = rpy2q(0, 0, -land_pos.z() / 2);
-      next_sup_q = rpy2q(0, 0, -land_pos.z() / 2);
-    } else {
-      next_swing_q = rpy2q(0, 0, before_land_pos.z() / 2);
-      next_sup_q = rpy2q(0, 0, before_land_pos.z() / 2);
-    }
-  } else {
-    if (swingleg == left) {
-      next_swing_q = rpy2q(0, 0, land_pos.z() / 2);
-      next_sup_q = rpy2q(0, 0, land_pos.z() / 2);
-    } else {
-      next_swing_q = rpy2q(0, 0, -before_land_pos.z() / 2);
-      next_sup_q = rpy2q(0, 0, -before_land_pos.z() / 2);
-    }
-  }
+  Quat foot_rot = rpy2q(0.0, 0.0, land_pos.z());
+  Quat waist_rot = rpy2q(0.0, 0.0, land_pos.z() * 0.5);
 
-  // set next landing position
   // swing leg
-  Vector3 swing_p(ref_land_pose[swingleg].p().x() + next_land_distance[0],
-                  ref_land_pose[swingleg].p().y() + next_land_distance[1],
-                  init_pose[swingleg].p().z());
-  Quaternion swing_q = ref_land_pose[swingleg].q() * next_swing_q;
-  // support leg
-  rl supleg = swingleg == right ? left : right;
-  Vector3 sup_p(ref_land_pose[supleg].p().x(), ref_land_pose[supleg].p().y(),
-                init_pose[supleg].p().z());
-  Quaternion sup_q = ref_land_pose[supleg].q() * next_sup_q;  // union angle
+  Vector3 swing_p(
+      ref_land_pose[swingleg].p().x() + next_land_distance[0],
+      ref_land_pose[swingleg].p().y() + next_land_distance[1],
+      init_feet_pose[swingleg].p().z());
+  Quat swing_q = ref_land_pose[swingleg].q() * foot_rot;
 
   // set next landing position
   ref_land_pose[swingleg].set(swing_p, swing_q);
-  ref_land_pose[supleg].set(sup_p, sup_q);
-  ref_waist_r = ref_waist_r * rpy2q(0, 0, land_pos.z());
-
-  std::cout << "[cpgen] ref yaw: " << ref_land_pose[right].rpy().z() << ", " << ref_land_pose[left].rpy().z() << std::endl;
-
+  ref_waist_r = ref_waist_r * waist_rot;
 
   before_land_pos = land_pos;
   before_land_dis = next_land_distance;
@@ -262,11 +237,14 @@ double cpgen::isCollisionLegs(double yn, double yb) {
 void cpgen::setInitLandPose(const Affine3d init_leg_pose[]) {
   for (int i = 0; i < 2; ++i) {
     Vector3 trans = init_leg_pose[i].translation();
-    Quaternion q = Quaternion(init_leg_pose[i].rotation());
+    Quat q = Quat(init_leg_pose[i].rotation());
 
-    init_pose[i].set(trans, q);
-    ref_land_pose[i].set(init_pose[i]);
+    dist_body_foot[i] = Vector3::Zero() - trans;  dist_body_foot[i].z() = 0.0;
+    init_feet_pose[i].set(trans, q);
+    ref_land_pose[i].set(init_feet_pose[i]);
   }
+  // feet_dist = ref_land_pose[0].p() - ref_land_pose[1].p();
+  // feet_dist.cwiseAbs();
 }
 
 }  // namespace cp

@@ -13,10 +13,10 @@ class cpgen {
   cpgen() {}
   ~cpgen() {}
 
-  void initialize(const Vector3& com, const Quat& waist_r, const Affine3d init_leg_pose[],
-        const Quaternion i_base2leg[], const double endcpoff[],
-        double t, double sst, double dst,
-        double cogh, double legh);
+  void initialize(
+      const Vector3& com, const Quat& waist_r, const Affine3d init_leg_pose[],
+      const Quat i_base2leg[], const double endcpoff[],
+      double t, double sst, double dst, double cogh, double legh);
   void setup(double t, double sst, double dst, double cogh, double legh);
   void getInitWalkingPattern(Vector3* com_pos, Quat* waist_r,
                              Pose* right_leg_pose, Pose* left_leg_pose);
@@ -65,7 +65,9 @@ class cpgen {
 
   Pose ref_land_pose[2];    // world coodinate reference land position
   Quat ref_waist_r;
-  Pose init_pose[2];
+
+  Pose init_feet_pose[2];
+  Vector3 dist_body_foot[2];
 };
 
 }  // namespace cp
