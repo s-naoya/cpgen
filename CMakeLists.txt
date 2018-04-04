@@ -4,20 +4,20 @@ project(cpgen)
 set(CMAKE_CXX_FLAGS_RELEASE "-Wall -O2")
 
 set(SOURCES
-cpgen.cpp
-com_track.cpp
-leg_track.cpp
-interpolation.cpp
-plan_footprints.cpp
+  cpgen.cpp
+  com_track.cpp
+  leg_track.cpp
+  interpolation.cpp
+  plan_footprints.cpp
 )
 
 set(INCLUDES
- cpgen.h
- com_track.h
- leg_track.h
- eigen_types.h
- interpolation.h
- plan_footprints.h
+  cpgen.h
+  com_track.h
+  leg_track.h
+  eigen_types.h
+  interpolation.h
+  plan_footprints.h
 )
 
 # find_package(Eigen3 REQUIRED)
