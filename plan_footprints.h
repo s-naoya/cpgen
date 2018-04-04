@@ -13,20 +13,23 @@ class PlanFootprints {
   PlanFootprints() {}
   ~PlanFootprints() {}
 
-  void init_setup(const Affine3d init_leg_pose[], const Quat& waist_r,
+  void init_setup(const Affine3d init_leg_pose[], const Quat& waist_q,
                   const Vector3& com, const double endcpoff[]);
 
-  void setValues(walking_state ws, rl swing_leg, Vector3 landpos);
+  void setValues(walking_state wstate_, rl swingleg_, Vector3 step_length_);
   void update();
 
   walking_state whichwalk;  // now walk or step
 
   Pose ref_land_pose[2];    // world coodinate reference land position
+  Pose ref_waist_pose;
   Quat ref_waist_r;
   Vector2 end_cp;
 
  private:
+  void calcNextWaistPose();
   void calcNextFootprint();
+  void calcNextFootprintOld();
   void calcEndCP();
 
   void whichWalkOrStep();
@@ -34,10 +37,11 @@ class PlanFootprints {
   double isCollisionLegs(double yn, double yb);
 
   rl swingleg;
-  Vector3 land_pos;
+  Vector3 step_length;
   walking_state wstate;
   Pose init_feet_pose[2];
 
+  Vector3 dist_body2foot[2];
   double end_cp_offset[2]; // end-of-CP offset  (x, y)[m]
 
 };

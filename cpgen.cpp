@@ -62,7 +62,8 @@ void cpgen::estop() {
 }
 
 void cpgen::setLandPos(const Vector3& pose) {
-  land_pos = pose;  land_pos.z() = deg2rad(land_pos.z());
+  land_pos = pose;  // TODO! Round down to about millimeter
+  land_pos.z() = deg2rad(land_pos.z());
 }
 
 void cpgen::getWalkingPattern(Vector3* com_pos, Quat* waist_r,
