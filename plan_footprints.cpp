@@ -10,7 +10,7 @@ void PlanFootprints::init_setup(const Affine3d init_leg_pose[],
     Quat q(init_leg_pose[i].rotation());
     init_feet_pose[i].set(trans, q);
     ref_land_pose[i].set(init_feet_pose[i]);
-    dist_body2foot[i] << trans;
+    dist_body2foot[i] << trans;  // TODO! subtraction to body position
   }
   ref_waist_pose.set(com, waist_q);
   // ref_waist_r = waist_r;
@@ -19,14 +19,11 @@ void PlanFootprints::init_setup(const Affine3d init_leg_pose[],
   step_length << 0.0, 0.0, 0.0;
 }
 
-void PlanFootprints::setValues(walking_state wstate_, rl swingleg_,
-                               Vector3 step_length_) {
-  // this->wstate = wstate;
-  // this->swingleg = swingleg;
-  // this->step_length = step_length;
-  wstate = wstate_;
-  swingleg = swingleg_;
-  step_length = step_length_;
+void PlanFootprints::setValues(walking_state wstate, rl swingleg,
+                               Vector3 step_length) {
+  this->wstate = wstate;
+  this->swingleg = swingleg;
+  this->step_length = step_length;
 }
 
 void PlanFootprints::update() {
@@ -36,10 +33,10 @@ void PlanFootprints::update() {
 }
 
 void PlanFootprints::calcNextWaistPose() {
-  Vector3 waist_pos = ref_waist_pose.p() + step_length;  waist_pos.z() = 0.0;
   Quat waist_r = ref_waist_pose.q() * rpy2q(0.0, 0.0, step_length.z());
+  Vector3 waist_pos = ref_waist_pose.p() + waist_r * step_length;
+  waist_pos.z() = 0.0;
   ref_waist_pose.set(waist_pos, waist_r);
-  std::cout << waist_pos[0] << ", " << waist_pos[1] << std::endl;
 }
 
 void PlanFootprints::calcNextFootprint() {
