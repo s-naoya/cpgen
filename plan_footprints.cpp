@@ -17,6 +17,7 @@ void PlanFootprints::init_setup(const Affine3d init_leg_pose[],
   end_cp << com[0], com[1];
   end_cp_offset[0] = endcpoff[0];  end_cp_offset[1] = endcpoff[1];
   step_vector << 0.0, 0.0, 0.0;
+  step_num = 0;
 }
 
 void PlanFootprints::setValues(walking_state wstate, rl swingleg,
@@ -27,10 +28,17 @@ void PlanFootprints::setValues(walking_state wstate, rl swingleg,
   step_angle = land_pos.z();
 }
 
+int PlanFootprints::addstep(int add_step_num) {
+  step_num += add_step_num;
+  return step_num;
+}
+
 void PlanFootprints::update() {
+  if (step_num == 0) return;
   calcNextWaistPose();
   calcNextFootprint();
   calcEndCP();
+  step_num--;
 }
 
 void PlanFootprints::calcNextWaistPose() {
@@ -91,7 +99,7 @@ void PlanFootprints::calcNextFootprintOld() {
   }
 
   // calc next step land rotation
-  Quat foot_rot = rpy2q(0.0, 0.0, step_angle;
+  Quat foot_rot = rpy2q(0.0, 0.0, step_angle);
   Quat waist_rot = rpy2q(0.0, 0.0, step_angle * 0.5);
 
   // swing leg

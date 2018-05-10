@@ -76,6 +76,7 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Quat* waist_r,
   if (step_delta_time >= double_sup_time + single_sup_time) {
     swingleg = swingleg == right ? left : right;
     pf.setValues(wstate, swingleg, land_pos);
+    pf.addstep(1);
     pf.update();
     ref_zmp = comtrack.calcRefZMP(pf.end_cp);
 

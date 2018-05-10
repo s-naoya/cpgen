@@ -17,6 +17,7 @@ class PlanFootprints {
                   const Vector3& com, const double endcpoff[]);
 
   void setValues(walking_state wstate, rl swingleg, Vector3 land_pos);
+  int addstep(int add_step_num);
   void update();
 
   walking_state whichwalk;  // now walk or step
@@ -41,6 +42,7 @@ class PlanFootprints {
   double step_angle;
   walking_state wstate;
   Pose init_feet_pose[2];
+  int step_num;
 
   Vector3 dist_body2foot[2];
   double end_cp_offset[2]; // end-of-CP offset  (x, y)[m]
