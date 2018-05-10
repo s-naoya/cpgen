@@ -16,7 +16,7 @@ class PlanFootprints {
   void init_setup(const Affine3d init_leg_pose[], const Quat& waist_q,
                   const Vector3& com, const double endcpoff[]);
 
-  void setValues(walking_state wstate, rl swingleg, Vector3 step_length);
+  void setValues(walking_state wstate, rl swingleg, Vector3 land_pos);
   void update();
 
   walking_state whichwalk;  // now walk or step
@@ -37,7 +37,8 @@ class PlanFootprints {
   double isCollisionLegs(double yn, double yb);
 
   rl swingleg;
-  Vector3 step_length;
+  Vector3 step_vector;
+  double step_angle;
   walking_state wstate;
   Pose init_feet_pose[2];
 
