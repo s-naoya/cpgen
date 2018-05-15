@@ -25,6 +25,7 @@ class PlanFootprints {
   Pose ref_land_pose[2];    // world coodinate reference land position
   Pose ref_waist_pose;
   Quat ref_waist_r;
+  // TODO! ref waist and landpose to struct and to private
   Vector2 end_cp;
 
  private:

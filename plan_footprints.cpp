@@ -17,6 +17,7 @@ void PlanFootprints::init_setup(const Affine3d init_leg_pose[],
   end_cp << com[0], com[1];
   end_cp_offset[0] = endcpoff[0];  end_cp_offset[1] = endcpoff[1];
   step_vector << 0.0, 0.0, 0.0;
+  step_angle = 0.0;
   step_num = 0;
 }
 
@@ -44,6 +45,7 @@ void PlanFootprints::update() {
 void PlanFootprints::calcNextWaistPose() {
   Quat waist_r = ref_waist_pose.q() * rpy2q(0.0, 0.0, step_angle);
   Vector3 waist_pos = ref_waist_pose.p() + waist_r * step_vector;
+  waist_pos.z() = 0.0;
   ref_waist_pose.set(waist_pos, waist_r);
 }
 
