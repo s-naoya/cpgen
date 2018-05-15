@@ -6,7 +6,7 @@ namespace cp {
 // need to call this before call getLegTrack
 void LegTrack::init_setup(double sampling_time, double single_sup_time,
                           double double_sup_time, double legh,
-                          Pose now_leg_pose[2], const Quat& waist_r) {
+                          const Affine3d now_leg_pose[2], const Quat& waist_r) {
   init_pose[right].set(now_leg_pose[right]);
   init_pose[left].set(now_leg_pose[left]);
   bfr_landpose[right].set(now_leg_pose[right]);

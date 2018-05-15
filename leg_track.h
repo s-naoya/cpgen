@@ -16,8 +16,8 @@ class LegTrack {
   ~LegTrack() {}
 
   void init_setup(double sampling_time, double single_sup_time,
-                  double double_sup_time, double legh, Pose now_leg_pose[],
-                  const Quat& waist_r);
+                  double double_sup_time, double legh,
+                  const Affine3d now_leg_pose[], const Quat& waist_r);
   void setup(double sampling_time, double single_sup_time,
              double double_sup_time, double legh);
   void setStepVar(const Pose ref_land_pose[], const Quat &ref_waist,
