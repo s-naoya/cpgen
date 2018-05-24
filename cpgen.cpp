@@ -9,7 +9,7 @@ void cpgen::initialize(const Vector3& com, const Quat& waist_r,
              const double endcpoff[],
              double t, double sst, double dst, double cogh, double legh) {
   // init variable setup
-  swingleg = left;
+  swingleg = right;
   base2leg[0] = i_base2leg[0];  base2leg[1] = i_base2leg[1];
 
   setup(t, sst, dst, cogh, legh);
@@ -74,7 +74,6 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Quat* waist_r,
 
   // if finished a step, calc leg track and reference ZMP.
   if (step_delta_time >= double_sup_time + single_sup_time) {
-    swingleg = swingleg == right ? left : right;
     pf.setValues(wstate, swingleg, land_pos);
     pf.addstep(1);
     pf.update();
@@ -95,6 +94,7 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Quat* waist_r,
   // setting flag and time if finished a step
   step_delta_time += dt;
   if (step_delta_time >= double_sup_time + single_sup_time) {
+    swingleg = swingleg == right ? left : right;
     if (wstate == starting1) {
       wstate = starting2;
     } else if (wstate == starting2) {

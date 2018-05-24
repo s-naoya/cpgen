@@ -31,7 +31,7 @@ class cpgen {
   rl getSwingleg() {return swingleg;}
   Vector2 getRefZMP() {return ref_zmp;}
   // Vector2 getEndCP() {return end_cp;}
-  int getWstate() {return wstate;}
+  walking_state getWstate() {return wstate;}
 
  private:
   void calcLandPos();

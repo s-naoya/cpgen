@@ -58,7 +58,7 @@ void PlanFootprints::calcNextFootprint() {
 }
 
 void PlanFootprints::calcEndCP() {
-  if (wstate == stopping1 || wstate == stopping2 || wstate == stop_next) {
+  if (wstate == stopping2 || wstate == stopping1) {
     end_cp[0] = ref_land_pose[swingleg].p().x() + end_cp_offset[0];
     end_cp[1] = (ref_land_pose[0].p().y() + ref_land_pose[1].p().y()) * 0.5;
   } else {
