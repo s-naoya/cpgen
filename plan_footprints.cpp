@@ -25,21 +25,15 @@ void PlanFootprints::setValues(walking_state wstate, rl swingleg,
                                Vector3 land_pos) {
   this->wstate = wstate;
   this->swingleg = swingleg;
+  if (wstate == stopping1) { land_pos << 0.0, 0.0, 0.0; }
   step_vector << land_pos.x(), land_pos.y(), 0.0;
   step_angle = land_pos.z();
 }
 
-int PlanFootprints::addstep(int add_step_num) {
-  step_num += add_step_num;
-  return step_num;
-}
-
 void PlanFootprints::update() {
-  if (step_num == 0) return;
   calcNextWaistPose();
   calcNextFootprint();
   calcEndCP();
-  step_num--;
 }
 
 void PlanFootprints::calcNextWaistPose() {

@@ -27,10 +27,14 @@ class cpgen {
                          Pose* right_leg_pose, Pose* left_leg_pose);
 
   void setLandPos(const Vector3& pos);
+  void setLandPosModification(const Vector3& pos);
+
+  void calcNextFootprint(const Vector3& step_vector, double step_angle,
+    Pose& ref_waist_pose, Pose ref_land_pose[]);
+  Vector2 calcEndCP(const Pose ref_land_pose[]);
 
   rl getSwingleg() {return swingleg;}
   Vector2 getRefZMP() {return ref_zmp;}
-  // Vector2 getEndCP() {return end_cp;}
   walking_state getWstate() {return wstate;}
 
  private:
@@ -41,7 +45,7 @@ class cpgen {
 
   CoMTrack comtrack;
   LegTrack legtrack;
-  PlanFootprints pf;
+  // PlanFootprints pf;
 
   // parameter
   double dt;               // sampling time [s]
@@ -53,11 +57,14 @@ class cpgen {
   Quat base2leg[2];
 
   Vector3 land_pos;         // landing position x[m], y[m], theta[rad]
+  Vector3 land_pos_mod;
   rl swingleg;              // which swing leg(0: right, 1: left)
   walking_state wstate;     // now walking state (definition is eigen_types.h)
   Vector2 ref_zmp;          // reference ZMP (calc by CoMTrack class)
+  double end_cp_offset[2];
 
-  Vector3 dist_body_foot[2];
+  Vector3 dist_body2foot[2];
+  Pose init_feet_pose[2], init_com_pose;
 };
 
 }  // namespace cp

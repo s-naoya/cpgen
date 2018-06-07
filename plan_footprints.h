@@ -17,7 +17,6 @@ class PlanFootprints {
                   const Vector3& com, const double endcpoff[]);
 
   void setValues(walking_state wstate, rl swingleg, Vector3 land_pos);
-  int addstep(int add_step_num);
   void update();
 
   walking_state whichwalk;  // now walk or step

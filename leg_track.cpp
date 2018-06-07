@@ -48,8 +48,6 @@ void LegTrack::setStepVar(const Pose ref_landpose_leg_w[],
   bfr_waist_r = ref_waist_r;
   ref_waist_r = ref_waist;
 
-  // std::cout << "[cpgen] ref yaw: " << ref_landpose[right].rpy().z() << ", " << ref_landpose[left].rpy().z() << std::endl;
-
   // for (x, y) lerp
   bfr << bfr_landpose[swl].p().x(), bfr_landpose[swl].p().y();
   ref << ref_landpose[swl].p().x(), ref_landpose[swl].p().y();
