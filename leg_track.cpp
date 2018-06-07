@@ -29,8 +29,11 @@ void LegTrack::setup(double sampling_time, double single_sup_time,
   leg_h = legh + ground_h;
 }
 
-// set variable of a step
-// call only switch swing leg
+// @brief set variable of a step. call only switch swing leg
+// @param[in] ref_landpose_leg_w[2]: reference landing pose(world coodinate)
+// @param[in] ref_waist: reference waist rotation
+// @param[in] swingleg: next step swing leg
+// @param[in] wstate: next step walking state
 void LegTrack::setStepVar(const Pose ref_landpose_leg_w[],
      const Quat &ref_waist, rl swingleg, walking_state wstate) {
   // set time var of a step
@@ -56,6 +59,9 @@ void LegTrack::setStepVar(const Pose ref_landpose_leg_w[],
   inter_z_2.setInter5(leg_h, 0.0, 0.0, ground_h, 0.0, 0.0, sst*0.5);
 }
 
+// @brief calculate next roop leg pose
+// @param[in] t: delta step time.  0 <= t < single support time + double support time
+// @param[out] r_leg_pose: return next roop leg pose
 void LegTrack::getLegTrack(double t, Pose r_leg_pose[]) {
   rl spl = swl == right ? left : right;
   if (ws == starting1 || ws == stopping2) {
@@ -87,20 +93,5 @@ void LegTrack::getLegTrack(double t, Pose r_leg_pose[]) {
     r_leg_pose[spl].set(bfr_landpose[spl].p());
   }
 }
-
-//     // yaw
-//     // swing leg
-//     Quaternion start_quat = before_landpos[swingleg].q();
-//     Quaternion finish_quat = ref_landpos_leg_w[swingleg].q();
-//     lerp_same(start_quat, double_sup_time * 0.5, &leg_pos_quat);
-//     lerp_q(start_quat, finish_quat, single_sup_time, &leg_pos_quat);
-//     lerp_same(finish_quat, double_sup_time * 0.5, &leg_pos_quat);
-//     // support leg
-//     start_quat = before_landpos[supleg].q();
-//     finish_quat = ref_landpos_leg_w[supleg].q();
-//     lerp_same(start_quat, double_sup_time * 0.5, &sup_leg_quat);
-//     lerp_q(start_quat, finish_quat, single_sup_time, &sup_leg_quat);
-//     lerp_same(finish_quat, double_sup_time * 0.5, &sup_leg_quat);
-//   }
 
 }  // namespace cp
