@@ -18,7 +18,6 @@ void cpgen::initialize(const Vector3& com, const Quat& waist_r,
                       leg_h, init_leg_pose, waist_r);
   // pf.init_setup(init_leg_pose, waist_r, com, endcpoff);
   init_com_pose.set(com, waist_r);
-  ref_zmp = comtrack.calcRefZMP(Vector2(com[0], com[1]));
   land_pos = Vector3::Zero();
   land_pos_mod = Vector3::Zero();
   end_cp_offset[0] = endcpoff[0];  end_cp_offset[1] = endcpoff[1];
@@ -98,11 +97,9 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Quat* waist_r,
     // calc end_cp and ref_zmp
     calcNextFootprint(land_pos, land_pos.z(), ref_waist_pose_toec, ref_land_pose_toec);
     end_cp = calcEndCP(ref_land_pose_toec);
-    ref_zmp = comtrack.calcRefZMP(end_cp);
+    comtrack.calcRefZMP(end_cp);
 
     // to calc legtrack
-    std::cout << "[cpgen] land_pos: " << land_pos.x() << ", " << land_pos.y() << std::endl;
-    std::cout << "[cpgen] land_mod: " << land_pos_mod.x() << ", " << land_pos_mod.y() << std::endl;
     calcNextFootprint(land_pos+land_pos_mod, land_pos.z(), ref_waist_pose, ref_land_pose);
     legtrack.setStepVar(ref_land_pose, ref_waist_pose.q(), swingleg, wstate);
     step_delta_time = 0.0;

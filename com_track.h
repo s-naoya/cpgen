@@ -23,7 +23,8 @@ class CoMTrack {
              double double_sup_time, double cog_h);
 
   Vector3 getCoMTrack(const Vector2& end_cp, double step_delta_time);
-  Vector2 calcRefZMP(const Vector2& end_cp);
+  void calcRefZMP(const Vector2& end_cp);
+  Vector2 getRefZMP() {return ref_zmp;}
 
  private:
   void setStepVariable();

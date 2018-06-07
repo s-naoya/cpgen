@@ -34,7 +34,7 @@ class cpgen {
   Vector2 calcEndCP(const Pose ref_land_pose[]);
 
   rl getSwingleg() {return swingleg;}
-  Vector2 getRefZMP() {return ref_zmp;}
+  Vector2 getRefZMP() {return comtrack.getRefZMP();}
   walking_state getWstate() {return wstate;}
 
  private:
@@ -60,7 +60,6 @@ class cpgen {
   Vector3 land_pos_mod;
   rl swingleg;              // which swing leg(0: right, 1: left)
   walking_state wstate;     // now walking state (definition is eigen_types.h)
-  Vector2 ref_zmp;          // reference ZMP (calc by CoMTrack class)
   double end_cp_offset[2];
 
   Vector3 dist_body2foot[2];
