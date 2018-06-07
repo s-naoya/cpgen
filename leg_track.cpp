@@ -72,20 +72,20 @@ void LegTrack::getLegTrack(double t, Pose r_leg_pose[]) {
         r_leg_pose[swl].set(bfr_landpose[swl]);
         r_leg_pose[spl].set(bfr_landpose[spl].q());
     } else if (t < dst_s*0.5 + sst_s*0.5) {
-        double sst_s_t = t - dst_s*0.5;
-        Vector2 nex = inter_vec2.lerp(bfr, ref, sst_s, sst_s_t);
-        r_leg_pose[swl].set(Vector3(nex.x(), nex.y(), inter_z_1.inter5(sst_s_t)));
-        r_leg_pose[swl].set(inter_q.lerp(bfr_landpose[swl].q(), ref_landpose[swl].q(), sst_s, sst_s_t));
-        r_leg_pose[spl].set(inter_q.lerp(bfr_landpose[spl].q(), ref_landpose[spl].q(), sst_s, sst_s_t));
-        waist = inter_q.lerp(bfr_waist_r, ref_waist_r, sst_s, sst_s_t);
+        double sst_s_time = t - dst_s*0.5;
+        Vector2 nex = inter_vec2.lerp(bfr, ref, sst_s, sst_s_time);
+        r_leg_pose[swl].set(Vector3(nex.x(), nex.y(), inter_z_1.inter5(sst_s_time)));
+        r_leg_pose[swl].set(inter_q.lerp(bfr_landpose[swl].q(), ref_landpose[swl].q(), sst_s, sst_s_time));
+        r_leg_pose[spl].set(inter_q.lerp(bfr_landpose[spl].q(), ref_landpose[spl].q(), sst_s, sst_s_time));
+        waist = inter_q.lerp(bfr_waist_r, ref_waist_r, sst_s, sst_s_time);
     } else if (t < dst_s*0.5 + sst_s) {
-        double sst_s_t = t - dst_s*0.5;
-        double sst_s_ht = sst_s_t - sst_s*0.5;
-        Vector2 nex = inter_vec2.lerp(bfr, ref, sst_s, sst_s_t);
+        double sst_s_time = t - dst_s*0.5;
+        double sst_s_ht = sst_s_time - sst_s*0.5;
+        Vector2 nex = inter_vec2.lerp(bfr, ref, sst_s, sst_s_time);
         r_leg_pose[swl].set(Vector3(nex.x(), nex.y(), inter_z_2.inter5(sst_s_ht)));
-        r_leg_pose[swl].set(inter_q.lerp(bfr_landpose[swl].q(), ref_landpose[swl].q(), sst_s, sst_s_t));
-        r_leg_pose[spl].set(inter_q.lerp(bfr_landpose[spl].q(), ref_landpose[spl].q(), sst_s, sst_s_t));
-        waist = inter_q.lerp(bfr_waist_r, ref_waist_r, sst_s, sst_s_t);
+        r_leg_pose[swl].set(inter_q.lerp(bfr_landpose[swl].q(), ref_landpose[swl].q(), sst_s, sst_s_time));
+        r_leg_pose[spl].set(inter_q.lerp(bfr_landpose[spl].q(), ref_landpose[spl].q(), sst_s, sst_s_time));
+        waist = inter_q.lerp(bfr_waist_r, ref_waist_r, sst_s, sst_s_time);
     } else if (t <= st_s) {
         r_leg_pose[swl].set(ref_landpose[swl]);
         r_leg_pose[spl].set(ref_landpose[spl]);
