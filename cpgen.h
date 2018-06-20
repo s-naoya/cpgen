@@ -26,7 +26,6 @@ class cpgen {
   void estop();
 
   void setLandPos(const Vector3& pos);
-  void setLandPosModification(const Vector3& pos);
 
   void getWalkingPattern(Vector3* com_pos, Quat* waist_r,
                          Pose* right_leg_pose, Pose* left_leg_pose);
@@ -60,7 +59,6 @@ class cpgen {
   Quat base2leg[2];
 
   Vector3 land_pos;         // landing position x[m], y[m], theta[rad]
-  Vector3 land_pos_mod;
   rl swingleg;              // which swing leg(0: right, 1: left)
   walking_state wstate;     // now walking state (definition is eigen_types.h)
   double end_cp_offset[2];

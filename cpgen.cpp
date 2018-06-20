@@ -20,7 +20,6 @@ void cpgen::initialize(const Vector3& com, const Affine3d& init_waist_pose,
   this->init_waist_pose.set(init_waist_pose.translation(),
                             init_waist_pose.rotation());
   land_pos = Vector3::Zero();
-  land_pos_mod = Vector3::Zero();
   this->end_cp_offset[0] = end_cp_offset[0];
   this->end_cp_offset[1] = end_cp_offset[1];
 
@@ -79,17 +78,11 @@ void cpgen::setLandPos(const Vector3& pose) {
   land_pos.z() = deg2rad(land_pos.z());
 }
 
-void cpgen::setLandPosModification(const Vector3& pos) {
-  land_pos_mod = pos;
-}
-
 void cpgen::getWalkingPattern(Vector3* com_pos, Quat* waist_r,
                               Pose* right_leg_pose, Pose* left_leg_pose) {
 
   static double step_delta_time = double_sup_time + single_sup_time + 1.0;
   static Vector2 end_cp(init_waist_pose.p().x(), init_waist_pose.p().y());
-  static Pose ref_waist_pose_toec = init_waist_pose;
-  static Pose ref_land_pose_toec[2] = {init_feet_pose[0], init_feet_pose[1]};
   static Pose ref_waist_pose = init_waist_pose;
   static Pose ref_land_pose[2] = {init_feet_pose[0], init_feet_pose[1]};
 
@@ -97,15 +90,11 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Quat* waist_r,
 
   // if finished a step, calc leg track and reference ZMP.
   if (step_delta_time >= double_sup_time + single_sup_time) {
-    // calc end_cp and ref_zmp
-    calcNextFootprint(land_pos, land_pos.z(),
-                      ref_waist_pose_toec, ref_land_pose_toec);
-    end_cp = calcEndCP(ref_land_pose_toec);
-    comtrack.calcRefZMP(end_cp);
-
     // to calc legtrack
-    calcNextFootprint(land_pos+land_pos_mod, land_pos.z(),
+    calcNextFootprint(land_pos, land_pos.z(),
                       ref_waist_pose, ref_land_pose);
+    end_cp = calcEndCP(ref_land_pose);
+    comtrack.calcRefZMP(end_cp);
     legtrack.setStepVar(ref_land_pose, ref_waist_pose.q(), swingleg, wstate);
     step_delta_time = 0.0;
   }
