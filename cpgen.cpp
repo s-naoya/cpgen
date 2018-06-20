@@ -5,9 +5,9 @@ namespace cp {
 
 // init_leg_pos: 0: right, 1: left, world coodinate(leg end link)
 void cpgen::initialize(const Vector3& com, const Affine3d& init_waist_pose,
-                      const Affine3d init_leg_pose[], const Quat base_to_leg[],
-                      const double end_cp_offset[], double t, double sst,
-                      double dst, double cogh, double legh) {
+                       const Affine3d init_leg_pose[], const Quat base_to_leg[],
+                       const double end_cp_offset[], double t, double sst,
+                       double dst, double cogh, double legh) {
   // init variable setup
   swingleg = right;
   base2leg[0] = base_to_leg[0];  base2leg[1] = base_to_leg[1];
@@ -32,6 +32,7 @@ void cpgen::initialize(const Vector3& com, const Affine3d& init_waist_pose,
     init_feet_pose[i].set(trans, q);
     // ref_land_pose[i].set(init_feet_pose[i]);
     dist_body2foot[i] << trans;  // TODO! subtraction to body position
+    dist_body2foot[i].x() -= this->init_waist_pose.p().x();
   }
 
   std::cout << "[cpgen] initialize finish" << std::endl;
@@ -105,7 +106,6 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Quat* waist_r,
     // to calc legtrack
     calcNextFootprint(land_pos+land_pos_mod, land_pos.z(),
                       ref_waist_pose, ref_land_pose);
-    std::cout << "[cpgen] ref_land_pose_x: " << ref_land_pose[swingleg].p().x() << std::endl;
     legtrack.setStepVar(ref_land_pose, ref_waist_pose.q(), swingleg, wstate);
     step_delta_time = 0.0;
   }
@@ -151,7 +151,7 @@ void cpgen::getWalkingPattern(Vector3* com_pos, Quat* waist_r,
 // @param[in] step_vector: <X direction step distance, Y direction, no use>
 // @param[in] step_angle: amount of rotation
 // @param[in, out] ref_waist_pose:: in: now waist pose, out: reference of waist pose
-// @param[out] ref_land_pose[2]: reference of footprints
+// @param[out] ref_land_pose[right, left]: reference of footprints
 void cpgen::calcNextFootprint(const Vector3& step_vector, double step_angle,
     Pose& ref_waist_pose, Pose ref_land_pose[]) {
 
@@ -176,14 +176,14 @@ Vector2 cpgen::calcEndCP(const Pose ref_land_pose[]) {
 
   Vector2 end_cp = Vector2::Zero();
   if (wstate == stopping2 || wstate == stopping1) {
-    end_cp[0] = ref_land_pose[swingleg].p().x() + end_cp_offset[0];
-    end_cp[1] = (ref_land_pose[0].p().y() + ref_land_pose[1].p().y()) * 0.5;
+    end_cp.x() = ref_land_pose[swingleg].p().x() + end_cp_offset[0];
+    end_cp.y() = (ref_land_pose[0].p().y() + ref_land_pose[1].p().y()) * 0.5;
   } else {
-    end_cp[0] = ref_land_pose[swingleg].p().x() + end_cp_offset[0];
+    end_cp.x() = ref_land_pose[swingleg].p().x() + end_cp_offset[0];
     if (swingleg == right) {
-      end_cp[1] = ref_land_pose[swingleg].p().y() + end_cp_offset[1];
+      end_cp.y() = ref_land_pose[swingleg].p().y() + end_cp_offset[1];
     } else {
-      end_cp[1] = ref_land_pose[swingleg].p().y() - end_cp_offset[1];
+      end_cp.y() = ref_land_pose[swingleg].p().y() - end_cp_offset[1];
     }
   }
   return end_cp;
