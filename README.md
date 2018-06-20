@@ -6,29 +6,47 @@
 #include <cpgen/cpgen.h>
 
 int main(int argc, char** argv) {
-  double dt = 5e-3;
-  double single_sup_time = 0.5;
-  double double_sup_time = 0.2;
-  double cog_h = com[2];
-  double leg_h = 0.02;
+  const cp::Vector3 init_com = now_CoM_position;
+  const cp::Affine3d init_waist_pose = now_waist_pose;
+  const cp::Affine3d init_leg_pose[2] = {now_right_leg_pose, now_left_leg_pose};
+  const cp::Quat base_to_leg[2];  // no use
+  double end_cp_offset[2] = {0.0, 0.0};
+  double sampling_time = 5e-3;
+  double single_support_time = 0.5;
+  double double_support_time = 0.2;
+  double cog_height = init_com.z();
+  double leg_height = 0.02;
 
   // initialize cpgen
-  // com : now center of mass
-  // init_leg_pos : now both leg position
-  // base2leg : both leg rotation matrix(now no use)
-  cp::cpgen cpgen(com, init_leg_pos, base2leg, dt,
-                  single_sup_time, double_sup_time, cog_h, leg_h);
+  cp::cpgen cpgen();
+  cpgen.initialize(
+      init_com,
+      init_waist_pose,
+      init_leg_pose,
+      base_to_leg,
+      end_cp_offset,
+      sampling_time,
+      single_support_time,
+      double_support_time,
+      cog_height,
+      leg_height
+  );
 
   // set next landing position(x[m], y[m], theta[rad])
   // always can change this parameter(The change will be reflected next step)
   cp::Vector3 land_pos(0.0, 0.0, cp::deg2rad(0.0));
+
+  // walking pattern value
+  cp::Vector3 wp_com;
+  cp::Pose wp_right_leg_pose, wp_left_leg_pose;
+  cp::Quat wp_waist;
 
   // walking start
   cpgen.start();
   while (true) {
     cpgen.setLandPos(land_pos);
     // get leg track and com track every cycle
-    cpgen.getWalkingPattern(com, &wp_com, &wp_right_leg_pos, &wp_left_leg_pos);
+    cpgen.getWalkingPattern(&wp_com, &wp_waist, &wp_right_leg_pose, &wp_left_leg_pose);
 
     // can calculate inverse kinematics by wp_com and wp_(right and left)_leg_pos
   }
