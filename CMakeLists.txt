@@ -28,4 +28,4 @@ include_directories(/usr/include/eigen3)
 add_library(cpgen SHARED ${SOURCES})
 
 install(TARGETS cpgen LIBRARY DESTINATION lib)
-install(FILES ${INCLUDES} DESTINATION include)
+install(FILES ${INCLUDES} DESTINATION include/cpgen)
